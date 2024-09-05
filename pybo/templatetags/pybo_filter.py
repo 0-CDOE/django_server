@@ -26,5 +26,7 @@ nl2br을 사용하지 않을 경우 줄바꿈을 하기 위해서는 줄 끝에 
 """
 @register.filter
 def mark(value):
+    if value is None :
+        value = ""
     extensions = ["nl2br", "fenced_code"]
     return mark_safe(markdown.markdown(value, extensions=extensions))
