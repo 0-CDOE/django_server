@@ -10,13 +10,26 @@
     <!-- pybo CSS -->
     <link rel="stylesheet" href="{% static 'style.css' %}">
     <title>Hello, pybo!</title>
+
+    <style>
+        .reply-form{
+            display: none;
+            margin-top : 10px;
+        }
+        .image-preview {
+            max-width : 300px;
+            margin-top : 10px;
+        }
+    </style>
 </head>
 <body>
     {% include 'navbar.html' %}
     {% comment %} 기본 템플릿 안에 삽입될 내용 Start {% endcomment %}
     {% block content %} 
     {% endblock %}
+
     {% comment %} 기본 템플릿 안에 삽입될 내용 End {% endcomment %}
+
     {% comment %} jQuery JS {% endcomment %}
     <script src="{% static 'jquery-3.4.1.min.js' %}"></script>
     <!-- Bootstrap JS -->

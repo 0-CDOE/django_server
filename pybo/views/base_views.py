@@ -41,6 +41,8 @@ def index(request):
     #
     # 템플릿에 전달할 context 딕셔너리를 생성합니다.
     # 'Q_list' 키에 page_obj, 'page' 키에 현재 페이지 번호, 'kw' 키에 검색어를 담습니다.
+
+
     context = {'QList': page_obj, 'page': page, 'kw': kw}  # 템플릿에 전달할 데이터
     #
     # pybo/question_list.html 템플릿을 렌더링하고 context 데이터를 전달합니다.
@@ -55,8 +57,11 @@ def detail(request, question_id):
     question = get_object_or_404(Question, pk=question_id)  # pk로 Question 객체를 가져옴, 없으면 404 오류 발생
     #
     # 템플릿에 전달할 context 딕셔너리를 생성합니다.
-    context = {'question': question}  # 템플릿에 전달할 데이터
-    #
+    #질문에 있는 댓글을 넘겨줌
+    comments = question.comments.filter(parent__isnull=True)
+    context = {'question': question, 'comments': comments}  # 템플릿에 전달할 데이터
+
+
     # pybo/question_detail.html 템플릿을 렌더링하고 context 데이터를 전달합니다.
     return render(request, 'pybo/question_detail.html', context)  # 렌더링하여 사용자에게 응답
     #

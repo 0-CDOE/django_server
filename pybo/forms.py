@@ -1,14 +1,20 @@
 from django import forms
-from pybo.models import Question, Answer
+from pybo.models import Question, Answer,Comment
 
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['subject', 'content'] # subject와 content 필드만 사용
+        fields = ['subject', 'image'] # subject와 content 필드만 사용 #내용없애고 image만 추가
+        widgets = {
+
+            'subject': forms.TextInput(attrs={'class': 'form-control'}),
+            # 'content' : forms.Textarea(attrs={'class': 'form-control', 'rows':8}),
+        }
         labels = {
+
             'subject': '제목',
-            'content': '내용',
-        } # subject와 content 필드의 레이블을 '제목'과 '내용'으로 지정
+            # 'content' :'내용',
+        }
         # widgets = {
         #     'subject': forms.TextInput(attrs={'class': 'form-control'}),
         #     'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 10}),
@@ -24,3 +30,30 @@ class AnswerForm(forms.ModelForm):
         # widgets = {
         #     'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         # } # content 필드는 Textarea 위젯을 사용
+
+
+
+class CommentForm(forms.ModelForm):
+    class Meta:
+        model = Comment
+        fields = ['content','parent']
+
+        labels ={
+            'content': '내용',
+        }
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3}),
+            'parent': forms.HiddenInput()
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.parent_comment = kwargs.pop('parent_comment', None)
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        comment = super().save(commit=False)
+        if self.parent_comment:
+            comment.parent = self.parent_comment
+        if commit:
+            comment.save()
+        return comment

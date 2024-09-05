@@ -1,5 +1,11 @@
 import os
+
 import environ
+<<<<<<< HEAD
+=======
+
+import PIL
+>>>>>>> maum1000
 from .base import *
 
 from pathlib import path

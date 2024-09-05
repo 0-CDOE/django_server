@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import base_views, question_views, answer_views
+from .views import base_views, question_views, answer_views , comment_view
 
 app_name = 'pybo' # namespace를 사용하면 다른 앱의 URL 패턴과 이름이 중복되더라도 문제가 발생하지 않는다.
 
@@ -50,7 +50,15 @@ urlpatterns = [
     # answer_id를 매개변수로 받아 answer_delete 함수 호출
     path('answer/delete/<int:answer_id>/', answer_views.answer_delete, name='answer_delete'),
     # answer_id를 매개변수로 받아 answer_vote 함수 호출
-    path('answer/vote/<int:answer_id>/', answer_views.answer_vote, name='answer_vote')
+    path('answer/vote/<int:answer_id>/', answer_views.answer_vote, name='answer_vote'),
+
+
+    path('comment/create/question/<int:question_id>/', comment_view.comment_create_question ,name ='comment_create_question'),
+    path('comment/modify/question/<int:comment_id>/', comment_view.comment_modify_question ,name ='comment_modify_question'),
+    path('comment/delete/question/<int:comment_id>/', comment_view.comment_delete_question ,name ='comment_delete_question'),
+
+
+
 
 ]
 
