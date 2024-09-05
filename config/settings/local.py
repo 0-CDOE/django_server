@@ -1,6 +1,8 @@
 import os
+
 import environ
 
+import PIL
 from .base import *
 
 ALLOWED_HOSTS = []

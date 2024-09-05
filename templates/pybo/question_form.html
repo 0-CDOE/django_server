@@ -1,10 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+.image-preview {
+            max-width : 300px;
+            max-height : 300px;
+
+            margin-top : 10px;
+            margin-left : 100px;
+        }
+</style>
+
 <div class="container">
     <h5 class="my-3 border-bottom pb-2">질문 등록</h5>
 
-    <form method="post" class="post-form my-3">
+    <form method="post" class="post-form my-3" enctype="multipart/form-data">
         {% csrf_token %}
 
         {% comment %} 오류 표시 Start {% endcomment %}
@@ -22,15 +32,42 @@
 
         <div class="form-group">
             <label for="subject">제목</label>
-            <input type="text" name="subject" id="subject" class="form-control" value="{{ form.subject.value|default_if_none:'' }}">
+            <input type="text" name="{{ form.subject.name }}" id="subject" class="form-control" value="{{ form.subject.value|default_if_none:'' }}">
         </div>
 
-        <div class="form-group">
-            <label for="content">내용</label>
-            <textarea name="content" id="content" class="form-control" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
-        </div>
+<!--        <div class="form-group">-->
+<!--            <label for="content">내용</label>-->
+<!--            <textarea name="content" id="content" class="form-control" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>-->
+<!--        </div>-->
+        <p>
+            <label for="id_image">업로드 이미지:</label>
+            <input type="file" name="image" id="id_image" accept="image/*" value="{{ form.content.value|default_if_none:'' }}">
+        </p>
 
         <button type="submit" class="btn btn-primary">저장하기</button>
     </form>
 </div>
+
+<!--업로드전에 javascript로 이미지를 HOOK해서 미리 보여주기 -->
+<script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const imageInput = document.querySelector('input[name="image"]');
+            const imagePreview = document.createElement('img');
+            imagePreview.classList.add('image-preview');
+            document.body.appendChild(imagePreview);
+
+            imageInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.src = '';
+                }
+            });
+        });
+</script>
 {% endblock %}
