@@ -13,7 +13,7 @@ def question_create(request):
     ''' pybo 질문등록 '''
     #
     if request.method == 'POST':
-        form = QuestionForm(request.POST)
+        form = QuestionForm(request.POST,request.FILES) # 파일로딩하는 부분 추가 y.h.kang
         #
         if form.is_valid():
             question = form.save(commit=False)  # commit=False는 데이터베이스에 저장하지 않고 모델 객체만 반환
@@ -55,6 +55,7 @@ def question_modify(request, question_id):
         #
         if form.is_valid():
             question = form.save(commit=False)
+            question.author = request.user
             question.modify_date = timezone.now()  # 수정일시 저장
             question.save()
             return redirect('pybo:detail', question_id=question.id)

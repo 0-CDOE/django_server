@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-3">
+    <!-- 댓글 리스트 하위댓글이 없으면 기본만 보여주기-->
+    {% if comments %}
+        <ul>
+            {% for comment in comments %}
+                <li>
+                    <strong>{{ comment.author }}</strong>: {{ comment.content }}
+                    <a href="#" onclick="document.getElementById('id_parent').value='{{ comment.id }}'; return false;"></a>
+                    <!-- 대댓글 폼 -->
+                    <form method="post" style="margin-left: 20px;">
+                        {% csrf_token %}
+                        {{ form.as_p }}
+                        <input type="hidden" name="parent" id="id_parent" value="{{ comment.id }}">
+                        <button type="submit" class="btn btn-primary">답변저장하기</button>
+                    </form>
+
+                    <!-- 대댓글 리스트 -->
+
+                    <ul>
+                        {% for reply in comment.replies.all %}
+                            {% if reply.parent == comment %}
+                                <li>{{ reply.author }}: {{ reply.content }}</li>
+                               {% endif %}
+                            {% empty %}
+                             <li>등록된 답변이 없습니다.</li>
+                       {% endfor %}
+                    </ul>
+                </li>
+            {% empty %}
+                <li>No comments yet.</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <h5 class="border-bottom pb-2">댓글등록하기</h5>
+        <form method="post" class="post-form my-3">
+            {% csrf_token %}
+            {% include "form_errors.html" %}
+            <div class="form-group">
+                <label for ='content'>댓글내용</label>
+                <textarea class="form-control" name="content" id="content" rows="3">
+                    {{ form.content.value|default_if_none:''}}
+                </textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">저장하기</button>
+        </form>
+    {% endif %}
+
+</div>
+{% endblock %}

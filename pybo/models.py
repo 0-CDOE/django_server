@@ -12,9 +12,10 @@ class Question(models.Model):
         related_name='author_question'
         ) # User 모델은 회원 가입시 데이터 저장에 사용했던 모델이다.
     
-    subject = models.CharField(max_length=200) # CharField는 길이 제한이 있는 문자열을 정의할 때 사용
+    subject = models.CharField(max_length=200, blank=False) # CharField는 길이 제한이 있는 문자열을 정의할 때 사용
+    content = models.TextField(null=True, blank=True) # 공백허용으로 변경 y.h.kang
     
-    content = models.TextField() # TextField는 길이 제한이 없는 문자열을 정의할 때 사용
+    #content = models.TextField() # TextField는 길이 제한이 없는 문자열을 정의할 때 사용
     
     create_date = models.DateTimeField() # DateTimeField는 날짜와 시간을 의미
     """
@@ -24,13 +25,11 @@ class Question(models.Model):
     
     즉, modify_date는 수정일시를 저장하는 필드이며, 수정일시가 없을 수도 있다는 의미
     """
-    modify_date = models.DateTimeField(null=True, blank=True) 
+    modify_date = models.DateTimeField(null=True, blank=True)
+    view_count = models.PositiveIntegerField(default=0)
+    voter = models.ManyToManyField( User,related_name='voter_question') # 추천인 추가
+    image = models.ImageField(upload_to='image/', null=True, blank=True, verbose_name='업로드 이미지')
 
-    voter = models.ManyToManyField(
-        User,
-        related_name='voter_question'
-        ) # 추천인 추가
-    
     # __str__ 메서드는 객체를 문자열로 표현할 때 사용하는 함수이다.
     def __str__(self):
         return self.subject
@@ -52,3 +51,12 @@ class Answer(models.Model):
     create_date = models.DateTimeField()
     modify_date = models.DateTimeField(null=True, blank=True)
     voter = models.ManyToManyField(User, related_name='voter_answer')
+
+class Comment(models.Model):
+      author = models.ForeignKey(User, on_delete=models.CASCADE)
+      content = models.TextField()
+      create_date = models.DateTimeField()
+      modify_date = models.DateTimeField(null=True, blank=True)
+      question = models.ForeignKey(Question, null=True, blank=True, related_name='comments', on_delete=models.CASCADE)
+      answer = models.ForeignKey(Answer, null=True, blank=True, on_delete=models.CASCADE)
+      parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies', null=True, blank=True)

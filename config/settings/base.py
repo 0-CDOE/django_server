@@ -123,6 +123,22 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+
+
+import os
+MEDIA_URL= '/media/'
+MEDIA_ROOT =  os.path.join(BASE_DIR,'media')
+
+MAX_UPLOAD_SIZE = 5242880
+
+ALLOWED_FILE_TYPES=[
+
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+
+]
+
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static', # static 디렉터리를 추가
