@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 
+from ...ai_predict.ai_face import django_image_process
 from ..forms import QuestionForm
-from ..models import Question
+from ..models import Question, Answer
 
 ########################################################################################################
 
@@ -21,8 +22,20 @@ def question_create(request):
             question.create_date = timezone.now()
             question.save()
             #
-            return redirect('pybo:index')
-            #
+            # 이미지 처리 및 결과 답변 생성
+            if question.image:
+                image_path = question.image.path
+                result_image_path = django_image_process(image_path)  # AI 얼굴 인식 처리
+                answer = Answer(
+                    question=question,
+                    author=request.user,
+                    content="AI가 얼굴을 감지한 결과입니다.",
+                    result_image=result_image_path,
+                    create_date=timezone.now(),
+                )
+                answer.save()
+
+            return redirect('pybo:index')            #
         #
     else:
         form = QuestionForm()  # GET 요청인 경우 빈 QuestionForm 객체를 생성

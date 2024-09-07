@@ -22,16 +22,19 @@ index 함수는 질문 목록을 보여주는 기능을 한다.
 """
 
 urlpatterns = [
-    
+###############################################################################################################
     # base_views.py
+###############################################################################################################
 
     # 메인 페이지로 이동 (index 함수 호출)
     path('', base_views.index, name='index'),
     
     # 질문 상세 페이지로 이동 (question_id를 매개변수로 받아 detail 함수 호출)
     path('<int:question_id>/', base_views.detail, name='detail'),
-
+    
+###############################################################################################################
     # question_views.py
+###############################################################################################################
 
     # 질문 생성 페이지로 이동 (question_create 함수 호출)
     path('question/create/', question_views.question_create, name='question_create'),
@@ -44,8 +47,10 @@ urlpatterns = [
     
     # 질문 추천 (question_id를 매개변수로 받아 question_vote 함수 호출)
     path('question/vote/<int:question_id>/', question_views.question_vote, name='question_vote'),
-
+    
+###############################################################################################################
     # answer_views.py
+###############################################################################################################
 
     # 답변 생성 페이지로 이동 (question_id를 매개변수로 받아 answer_create 함수 호출)
     path('answer/create/<int:question_id>/', answer_views.answer_create, name='answer_create'),
@@ -58,8 +63,10 @@ urlpatterns = [
     
     # 답변 추천 (answer_id를 매개변수로 받아 answer_vote 함수 호출)
     path('answer/vote/<int:answer_id>/', answer_views.answer_vote, name='answer_vote'),
-
+    
+###############################################################################################################
     # comment_views.py
+###############################################################################################################
 
     # 질문에 대한 댓글 생성 (question_id를 매개변수로 받아 comment_create_question 함수 호출)
     path('comment/create/question/<int:question_id>/', comment_view.comment_create_question, name='comment_create_question'),
@@ -69,39 +76,7 @@ urlpatterns = [
     
     # 질문에 대한 댓글 삭제 (comment_id를 매개변수로 받아 comment_delete_question 함수 호출)
     path('comment/delete/question/<int:comment_id>/', comment_view.comment_delete_question, name='comment_delete_question'),
+    
 ]
 
 ###############################################################################################################
-
-# urlpatterns = [
-#     # index 함수 호출
-#     path('', views.index, name='index'), 
-    
-#     # question_id를 매개변수로 받아 detail 함수 호출
-#     path('<int:question_id>/', views.detail, name='detail'), 
-    
-#     # question_id를 매개변수로 받아 answer_create 함수 호출
-#     path('answer/create/<int:question_id>/', views.answer_create, name='answer_create'), 
-    
-#     # question_create 함수 호출
-#     path('question/create/', views.question_create, name='question_create'), 
-    
-#     # question_id를 매개변수로 받아 question_modify 함수 호출
-#     path('question/modify/<int:question_id>/', views.question_modify, name='question_modify'), 
-    
-#     # question_id를 매개변수로 받아 question_delete 함수 호출
-#     path('question/delete/<int:question_id>/', views.question_delete, name='question_delete'), 
-    
-#     # answer_id를 매개변수로 받아 answer_modify 함수 호출
-#     path('answer/modify/<int:answer_id>/', views.answer_modify, name='answer_modify'),
-    
-#     # answer_id를 매개변수로 받아 answer_delete 함수 호출
-#     path('answer/delete/<int:answer_id>/', views.answer_delete, name='answer_delete'),
-# ]
-
-##################################### 제네릭 뷰 방식 #####################################
-
-# urlpatterns = [
-#     path('', views.IndexView.as_view()), # IndexView 클래스를 뷰로 사용
-#     path('<int:pk>/', views.DetailView.as_view()), # DetailView 클래스를 뷰로 사용
-# ]

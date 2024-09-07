@@ -269,7 +269,7 @@ class ImageProcessor:
     #
     @staticmethod
     # 한글 텍스트 그리기 함수
-    def draw_text_korean(image, text, position, font_size, font_color=(255, 255, 255), background_color=(0, 0, 0)):
+    def draw_text_korean(config, image, text, position, font_size, font_color=(255, 255, 255), background_color=(0, 0, 0)):
         #
         font_path = config['font_path']
         #
@@ -314,7 +314,7 @@ class ImageProcessor:
     #
     @staticmethod
     # 이미지 확장 및 텍스트 추가 함수 (위쪽 확장)
-    def extend_and_add_text_above(image, text, font_size, font_color=(255, 255, 255), background_color=(0, 0, 0)):
+    def extend_and_add_text_above(config, image, text, font_size, font_color=(255, 255, 255), background_color=(0, 0, 0)):
         #
         font_path = config['font_path']
         # 이미지 크기 가져오기
@@ -415,8 +415,9 @@ class ImageMetadataManager:
 # 얼굴 인식 시스템 클래스 - SRP, OCP, DIP 적용
 # =========================
 class FaceRecognitionSystem:
-    def __init__(self, detector_manager: FaceDetectionManager, predictor: Predictor, image_processor: ImageProcessor, metadata_manager: ImageMetadataManager):
+    def __init__(self, config, detector_manager: FaceDetectionManager, predictor: Predictor, image_processor: ImageProcessor, metadata_manager: ImageMetadataManager):
         #
+        self.config = config
         self.detector_manager = detector_manager
         self.predictor = predictor
         self.image_processor = image_processor
@@ -503,7 +504,7 @@ class FaceRecognitionSystem:
             h = int(h * scale)
             #
             # 이미지에 박스 및 텍스트 추가
-            image_rgb = self.image_processor.draw_text_korean(image_rgb, prediction_text, (x, y), 15, font_color=(0, 0, 0), background_color=box_color)
+            image_rgb = self.image_processor.draw_text_korean(self.config, image_rgb, prediction_text, (x, y), 15, font_color=(0, 0, 0), background_color=box_color)
             image_rgb = cv2.rectangle(image_rgb, (x, y), (x + w, y + h), box_color, 2)
             #
         #
@@ -513,16 +514,16 @@ class FaceRecognitionSystem:
         race_info = "\n".join([f"{race}: {count}명" for race, count in race_cnt.items() if count != 0])
         info = face_info + gender_info + race_info
         # 이미지에 텍스트 추가
-        image_rgb = self.image_processor.extend_and_add_text_above(image_rgb, info, font_size=font_size)
+        image_rgb = self.image_processor.extend_and_add_text_above(self.config, image_rgb, info, font_size=font_size)
         # 저장할 파일 경로 설정
-        output_path = os.path.join(config['results_folder'], os.path.basename(image_path))
+        output_path = os.path.join(self.config['results_folder'], os.path.basename(image_path))
         # 이미지 저장
         cv2.imwrite(output_path, cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR))
         logging.info(f"이미지 분석 결과 저장:\n{output_path}")
         #
         # 가카 여부에 따라 저장 폴더 설정
         detection_folder = "detection_target" if gaka else "detection_non_target"
-        output_folder = os.path.join(config['results_folder'], f'{detection_folder}')
+        output_folder = os.path.join(self.config['results_folder'], f'{detection_folder}')
         # 이미지 저장 및 메타데이터 추가
         self.metadata_manager.copy_and_modify_image(image_path, output_folder)
         logging.info(f"메타데이터 추가 이미지 저장:\n{output_folder}")
@@ -534,6 +535,72 @@ class FaceRecognitionSystem:
 # =========================
 def main():
     #
+    # 경로가 전역변수일 경우 django에서는 오류가 발생할 수 있음
+    base_drive_dir = Path(os.getcwd())
+    #
+    config = {
+        "dlib_model_path"       : os.path.join(base_drive_dir, r'Model\DilbCNN\mmod_human_face_detector.dat'),
+        "landmark_path"         : os.path.join(base_drive_dir, r'Model\DlibCNN\shape_predictor_68_face_landmarks.dat'),
+        "yolo_model_path"       : os.path.join(base_drive_dir, r'Model\YOLOv8\yolov8n-face.pt'),
+        "fair_face_model_path"  : os.path.join(base_drive_dir, r'FairFace\resnet34_fair_face_4.pt'),
+        "image_folder"          : os.path.join(base_drive_dir, r'Image\test\test_park_mind_problem'),
+        "pickle_path"           : os.path.join(base_drive_dir, r'Embedings\FaceRecognition(ResNet34).pkl'),
+        "results_folder"        : os.path.join(base_drive_dir, r'results'),
+        "font_path"             : os.path.join(base_drive_dir, r'fonts\NanumGothic.ttf'),
+    }
+    #
+    # 얼굴 탐지기, 예측기, 이미지 프로세서, 메타데이터 관리자 생성
+    detector_manager = FaceDetectionManager([
+        DlibFaceDetector(config['dlib_model_path']),
+        YOLOFaceDetector(config['yolo_model_path']),
+        MTCNNFaceDetector()
+    ])
+    #
+    # 얼굴 예측기 생성
+    predictor = FairFacePredictor(config['fair_face_model_path'])
+    #
+    # 이미지 프로세서, 메타데이터 관리자 생성
+    image_processor = ImageProcessor()
+    metadata_manager = ImageMetadataManager()
+    #
+    # 얼굴 인식 시스템 생성
+    face_recognition_system = FaceRecognitionSystem(config, detector_manager, predictor, image_processor, metadata_manager)
+    #
+    # 타겟 얼굴 인코딩 load
+    with open(config['pickle_path'], 'rb') as f:
+        target_encodings = np.array(pickle.load(f))
+        #
+    #
+    # 이미지 폴더에서 이미지 load
+    image_list = [f for f in os.listdir(config['image_folder']) if f.lower().endswith(('png', 'jpg', 'jpeg'))]
+    #
+    for image in random.sample(image_list, 1):
+        image_path = os.path.join(config['image_folder'], image)
+        logging.info(f"이미지 처리 시작:\n{image_path}")
+        face_recognition_system.process_image(image_path, target_encodings)
+        logging.info("이미지 처리 완료")
+        #
+    #
+#
+if __name__ == "__main__":
+    #
+    main()
+    #
+#
+def django_image_process(image_path):
+    #
+    base_drive_dir = Path(os.getcwd())
+    #
+    config = {
+        "dlib_model_path"       : os.path.join(base_drive_dir, r'Model\DilbCNN\mmod_human_face_detector.dat'),
+        "landmark_path"         : os.path.join(base_drive_dir, r'Model\DlibCNN\shape_predictor_68_face_landmarks.dat'),
+        "yolo_model_path"       : os.path.join(base_drive_dir, r'Model\YOLOv8\yolov8n-face.pt'),
+        "fair_face_model_path"  : os.path.join(base_drive_dir, r'FairFace\resnet34_fair_face_4.pt'),
+        "image_folder"          : os.path.join(base_drive_dir, r'Image\test\test_park_mind_problem'),
+        "pickle_path"           : os.path.join(base_drive_dir, r'Embedings\FaceRecognition(ResNet34).pkl'),
+        "results_folder"        : os.path.join(base_drive_dir, r'results'),
+        "font_path"             : os.path.join(base_drive_dir, r'fonts\NanumGothic.ttf'),
+    }
     # 얼굴 탐지기, 예측기, 이미지 프로세서, 메타데이터 관리자 생성
     detector_manager = FaceDetectionManager([
         DlibFaceDetector(config['dlib_model_path']),
@@ -557,7 +624,6 @@ def main():
         #
     #
     # 이미지 폴더에서 이미지 load
-    image_list = [f for f in os.listdir(config['image_folder']) if f.lower().endswith(('png', 'jpg', 'jpeg'))]
     #
     for image in random.sample(image_list, 1):
         image_path = os.path.join(config['image_folder'], image)
@@ -566,23 +632,3 @@ def main():
         logging.info("이미지 처리 완료")
         #
     #
-#
-if __name__ == "__main__":
-    #
-    base_drive_dir = Path(os.getcwd())
-    #
-    # 경로는 전역 변수
-    config = {
-        "dlib_model_path"       : os.path.join(base_drive_dir, r'Model\DilbCNN\mmod_human_face_detector.dat'),
-        "landmark_path"         : os.path.join(base_drive_dir, r'Model\DlibCNN\shape_predictor_68_face_landmarks.dat'),
-        "yolo_model_path"       : os.path.join(base_drive_dir, r'Model\YOLOv8\yolov8n-face.pt'),
-        "fair_face_model_path"  : os.path.join(base_drive_dir, r'FairFace\resnet34_fair_face_4.pt'),
-        "image_folder"          : os.path.join(base_drive_dir, r'Image\test\test_park_mind_problem'),
-        "pickle_path"           : os.path.join(base_drive_dir, r'Embedings\FaceRecognition(ResNet34).pkl'),
-        "results_folder"        : os.path.join(base_drive_dir, r'results'),
-        "font_path"             : os.path.join(base_drive_dir, r'fonts\NanumGothic.ttf'),
-    }
-    #
-    main()
-    #
-#
