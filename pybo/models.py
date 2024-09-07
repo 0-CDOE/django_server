@@ -29,6 +29,7 @@ class Question(models.Model):
     view_count = models.PositiveIntegerField(default=0)
     voter = models.ManyToManyField( User,related_name='voter_question') # 추천인 추가
     image = models.ImageField(upload_to='image/', null=True, blank=True, verbose_name='업로드 이미지')
+    image2 = models.ImageField(upload_to='image2/', null=True, blank=True, verbose_name='업로드 이미지2')
 
     # __str__ 메서드는 객체를 문자열로 표현할 때 사용하는 함수이다.
     def __str__(self):

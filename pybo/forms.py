@@ -4,7 +4,7 @@ from pybo.models import Question, Answer,Comment
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question
-        fields = ['subject', 'image'] # subject와 content 필드만 사용 #내용없애고 image만 추가
+        fields = ['subject', 'image','image2'] # subject와 content 필드만 사용 #내용없애고 image만 추가
         widgets = {
 
             'subject': forms.TextInput(attrs={'class': 'form-control'}),
