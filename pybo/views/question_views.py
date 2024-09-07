@@ -35,7 +35,7 @@ def question_create(request):
                 )
                 answer.save()
 
-            return redirect('pybo:index')            #
+            return redirect('pybo:index')            
         #
     else:
         form = QuestionForm()  # GET 요청인 경우 빈 QuestionForm 객체를 생성
