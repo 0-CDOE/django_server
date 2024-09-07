@@ -624,6 +624,7 @@ def django_image_process(image_path):
         #
     #
     # 이미지 폴더에서 이미지 load
+    image_list = [f for f in os.listdir(config['image_folder']) if f.lower().endswith(('png', 'jpg', 'jpeg', 'gif'))]
     #
     for image in random.sample(image_list, 1):
         image_path = os.path.join(config['image_folder'], image)
