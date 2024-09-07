@@ -26,7 +26,7 @@ class Question(models.Model):
     voter = models.ManyToManyField(User, related_name='voter_question')
     
     # 질문에 첨부된 이미지, 이미지를 비워둘 수 있음
-    image = models.ImageField(upload_to='image/', null=True, blank=True, verbose_name='업로드 이미지')
+    question_image = models.ImageField(upload_to='question_images/', null=True, blank=True, verbose_name='업로드 이미지')
 
     # 객체를 문자열로 표현할 때 제목을 반환
     def __str__(self):
@@ -51,6 +51,9 @@ class Answer(models.Model):
     
     # 답변을 추천한 사용자들, 여러 사용자가 추천 가능 (ManyToManyField)
     voter = models.ManyToManyField(User, related_name='voter_answer')
+    
+    # 답변에 첨부된 이미지, 이미지를 비워둘 수 있음
+    answer_image = models.ImageField(upload_to='answer_image/', null=True, blank=True, verbose_name='업로드 이미지')
 
     # 객체를 문자열로 표현할 때 제목을 반환
     def __str__(self):

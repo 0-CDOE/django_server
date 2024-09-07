@@ -25,9 +25,7 @@ urlpatterns = [
     path('pybo/', include('pybo.urls')),
     path('common/', include('common.urls')),
     path('', base_views.index, name='index'),  # '/' 에 해당되는 path
-
-
 ]
 
 handler404 = 'common.views.page_not_found'
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # MEDIA_URL로 시작하는 URL은 MEDIA_ROOT에서 파일을 찾아 반환

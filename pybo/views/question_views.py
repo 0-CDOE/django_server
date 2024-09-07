@@ -13,11 +13,11 @@ def question_create(request):
     ''' pybo 질문등록 '''
     #
     if request.method == 'POST':
-        form = QuestionForm(request.POST,request.FILES) # 파일로딩하는 부분 추가 y.h.kang
+        form = QuestionForm(request.POST,request.FILES) # 파일 업로드 처리
         #
         if form.is_valid():
             question = form.save(commit=False)  # commit=False는 데이터베이스에 저장하지 않고 모델 객체만 반환
-            question.author = request.user  # author 속성에 로그인 계정 저장
+            question.author = request.user  # 로그인한 사용자를 작성자로 저장
             question.create_date = timezone.now()
             question.save()
             #
