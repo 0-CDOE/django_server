@@ -6,6 +6,10 @@ ActivateVenv.bat
 .env
 .idea/
 
+### ai_system ###
+Model/
+Embeddings/
+
 # Created by https://www.toptal.com/developers/gitignore/api/django
 # Edit at https://www.toptal.com/developers/gitignore?templates=django
 

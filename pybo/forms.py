@@ -15,11 +15,6 @@ class QuestionForm(forms.ModelForm):
             'image2' : '이미지2',
         }
         
-        # widgets = {
-        #     'subject': forms.TextInput(attrs={'class': 'form-control'}),
-        #     'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 10}),
-        # } # subject 필드는 TextInput 위젯을 사용하고 content 필드는 Textarea 위젯을 사용
-        
 ########################################################################################################
 
 class AnswerForm(forms.ModelForm):
@@ -29,10 +24,6 @@ class AnswerForm(forms.ModelForm):
         labels = {
             'content': '답변내용',
         }
-        
-        # widgets = {
-        #     'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
-        # } # content 필드는 Textarea 위젯을 사용
 
 ########################################################################################################
 

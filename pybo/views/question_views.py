@@ -6,8 +6,9 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.urls import reverse
 
+from ..ai_system.ai_pybo import start_ai
 from ..forms import QuestionForm
-from ..models import Question
+from ..models import Question, Answer
 
 ########################################################################################################
 
@@ -16,14 +17,37 @@ def question_create(request):
     ''' pybo 질문등록 '''
     #
     if request.method == 'POST':
-        form = QuestionForm(request.POST,request.FILES) # 파일로딩하는 부분 추가 y.h.kang
+        form = QuestionForm(request.POST,request.FILES) # 파일 업로드 처리
         #
         if form.is_valid():
             question = form.save(commit=False)  # commit=False는 데이터베이스에 저장하지 않고 모델 객체만 반환
-            question.author = request.user  # author 속성에 로그인 계정 저장
-            question.create_date = timezone.now() #작성시간
+            question.author = request.user  # 로그인한 사용자를 작성자로 저장
+            question.create_date = timezone.now()
             question.save()
-
+            # 이미지가 업로드되었으면 AI 처리 수행
+            if question.image1:
+                image_path = question.image1.path
+                #
+                # POST 요청에서 탐지기와 예측기 목록을 가져옵니다.
+                selected_detectors = request.POST.getlist('detectors')
+                selected_predictors = request.POST.getlist('predictors')
+                #
+                if selected_detectors or selected_predictors:
+                    # AI 모델을 이용한 이미지 처리
+                    # request를 함께 전달하여 데코레이터에서 처리될 수 있도록 함
+                    result_image_path = start_ai(request, image_path, selected_detectors, selected_predictors)
+                    # AI 처리 결과를 포함한 답변 생성
+                    answer = Answer(
+                        question=question,
+                        author=request.user,
+                        content="AI가 처리한 얼굴 인식 결과입니다.",
+                        answer_image=result_image_path,
+                        create_date=timezone.now(),
+                    )
+                    answer.save()
+                else:
+                    pass
+                #
             # 이미지 파일을 따로 저장하기 위해 Question 모델에서 정의한 필드에 접근
             if 'image1' in request.FILES:
                 question.image1 = request.FILES['image1']
@@ -35,8 +59,6 @@ def question_create(request):
 
         else:
             return JsonResponse({'error': form.errors}, status=400)  # 폼 유효성 검사 실패 시 에러 반환
-            #
-            #
         #
     else:
         form = QuestionForm()  # GET 요청인 경우 빈 QuestionForm 객체를 생성
@@ -46,6 +68,48 @@ def question_create(request):
     return render(request, 'pybo/question_form.html', context)  # question_form.html 파일을 렌더링하여 HTML 코드로 변환한 결과를 HttpResponse 객체로 반환
     #
 #
+
+########################################################################################################
+
+# @login_required(login_url='common:login')
+# def question_create(request):
+#     ''' pybo 질문등록 '''
+#     #
+#     if request.method == 'POST':
+#         form = QuestionForm(request.POST,request.FILES) # 파일 업로드 처리
+#         #
+#         if form.is_valid():
+#             question = form.save(commit=False)  # commit=False는 데이터베이스에 저장하지 않고 모델 객체만 반환
+#             question.author = request.user  # 로그인한 사용자를 작성자로 저장
+#             question.create_date = timezone.now()
+#             question.save()
+#             #
+#             # 이미지가 업로드되었으면 AI 처리 수행
+#             if question.image1:
+#                 image_path = question.image1.path
+#                 result_image_path = start_ai(request, image_path)
+#                 #
+#                 # AI 처리 결과를 포함한 답변 생성
+#                 answer = Answer(
+#                     question=question,
+#                     author=request.user,
+#                     content="AI가 처리한 얼굴 인식 결과입니다.",
+#                     answer_image=result_image_path,
+#                     create_date=timezone.now(),
+#                 )
+#                 answer.save()
+#                 #
+#             #
+#             return redirect('pybo:index')            
+#         #
+#     else:
+#         form = QuestionForm()  # GET 요청인 경우 빈 QuestionForm 객체를 생성
+#         #
+#     #
+#     context = {'form': form}
+#     return render(request, 'pybo/question_form.html', context)  # question_form.html 파일을 렌더링하여 HTML 코드로 변환한 결과를 HttpResponse 객체로 반환
+#     #
+# #
 
 ########################################################################################################
 
