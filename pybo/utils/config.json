@@ -1,9 +1,0 @@
-{
-    "dlib_model_path": "/ai_system/Model/mmod_human_face_detector.dat",
-    "yolo_model_path": "/ai_system/Model/yolov8n-face.pt",
-    "fair_face_model_path": "/ai_system/Model/resnet34_fair_face_4.pt",
-    "image_folder": "/ai_system/Image/test/test_park_mind_problem",
-    "pickle_path": "/ai_system/Embedings/FaceRecognition(ResNet34).pkl",
-    "font_path": "/ai_system/fonts/NanumGothic.ttf",
-    "results_folder": "/ai_system/results_test"
-}

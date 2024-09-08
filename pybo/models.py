@@ -28,10 +28,10 @@ class Question(models.Model):
     voter = models.ManyToManyField(User, related_name='voter_question')
     
     # 이미지1: 질문에 첨부된 이미지, null과 빈 값을 허용
-    image1 = models.ImageField(upload_to='image1/', null=True, blank=True, verbose_name='업로드 이미지1')
+    image1 = models.ImageField(upload_to='pybo/image1/', null=True, blank=True, verbose_name='업로드 이미지1')
     
     # 이미지2: 질문에 첨부된 두 번째 이미지, null과 빈 값을 허용
-    image2 = models.ImageField(upload_to='image2/', null=True, blank=True, verbose_name='업로드 이미지2')
+    image2 = models.ImageField(upload_to='pybo/image2/', null=True, blank=True, verbose_name='업로드 이미지2')
 
     # 객체를 문자열로 표현할 때 질문 제목을 반환
     def __str__(self):
@@ -62,7 +62,7 @@ class Answer(models.Model):
     voter = models.ManyToManyField(User, related_name='voter_answer')
     
     # 답변에 첨부된 이미지, 이미지를 비워둘 수 있음
-    answer_image = models.ImageField(upload_to='answer_image/', null=True, blank=True, verbose_name='업로드 이미지')
+    answer_image = models.ImageField(upload_to='pybo/answer_image', null=True, blank=True, verbose_name='업로드 이미지')
 
     # 객체를 문자열로 표현할 때 답변이 달린 질문의 제목을 반환
     def __str__(self):

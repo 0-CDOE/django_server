@@ -2,7 +2,7 @@ import os
 import pickle
 import numpy as np
 from pathlib import Path
-from ai_system.systems.face_detection_system import (
+from ..ai_system.for_django.face_detection_system import (
     FaceDetectionManager,
     DlibFaceDetector,
     YOLOFaceDetector,

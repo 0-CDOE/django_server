@@ -20,11 +20,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 import os
 
 # 미디어 파일 관련 설정
-MEDIA_URL= 'pybo/media/'
-MEDIA_ROOT =  os.path.join(BASE_DIR,'pybo/media')
-
-# AI 설정 파일 경로
-FACE_RECOGNITION_CONFIG = os.path.join(BASE_DIR, 'pybo/utils/config.json')
+MEDIA_URL= 'media/'
+MEDIA_ROOT =  os.path.join(BASE_DIR,'media')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
