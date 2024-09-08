@@ -6,7 +6,6 @@ import torch
 import torch.nn as nn
 import numpy as np
 import pickle
-import random
 import face_recognition
 from PIL import Image, ImageDraw, ImageFont
 from torchvision import models, transforms
@@ -19,7 +18,6 @@ import io
 import shutil
 from pathlib import Path
 import warnings
-import json
 #
 # =========================
 # 로깅 및 경고 설정
