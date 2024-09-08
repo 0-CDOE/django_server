@@ -91,6 +91,36 @@
             </div>
         </div>
 
+        {% comment %}
+        탐지기(Detectors) 선택. 여러 탐지기를 체크박스로 선택할 수 있습니다.
+        {% endcomment %}
+        <div class="form-group mt-3">
+            <label for="detectors">탐지기 선택:</label>
+            <div>
+                <input type="checkbox" id="dlib" name="detectors" value="dlib">
+                <label for="dlib">Dlib</label>
+            </div>
+            <div>
+                <input type="checkbox" id="yolo" name="detectors" value="yolo">
+                <label for="yolo">YOLO</label>
+            </div>
+            <div>
+                <input type="checkbox" id="mtcnn" name="detectors" value="mtcnn">
+                <label for="mtcnn">MTCNN</label>
+            </div>
+        </div>
+
+        {% comment %}
+        예측기(Predictors) 선택. 여러 예측기를 체크박스로 선택할 수 있습니다.
+        {% endcomment %}
+        <div class="form-group">
+            <label for="predictors">예측기 선택:</label>
+            <div>
+                <input type="checkbox" id="fairface" name="predictors" value="fairface">
+                <label for="fairface">FairFace</label>
+            </div>
+        </div>
+
         <button type="submit" class="btn btn-primary mt-3">저장하기</button>
     </form>
 </div>
