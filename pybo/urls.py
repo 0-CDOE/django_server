@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import base_views, question_views, answer_views, comment_view
+from .views import base_views, question_views, answer_views
 
 app_name = 'pybo'  # URL 네임스페이스. 다른 앱의 URL 패턴과 충돌하지 않도록 설정
 
@@ -57,17 +57,4 @@ urlpatterns = [
     
     # 답변 추천 처리. answer_id를 받아 해당 답변에 추천을 추가하는 answer_views.answer_vote 함수 호출.
     path('answer/vote/<int:answer_id>/', answer_views.answer_vote, name='answer_vote'),
-    
-    ###########################################################################################################
-    # comment_views.py 관련 URL
-    ###########################################################################################################
-
-    # 질문에 대한 댓글 생성. question_id를 받아 해당 질문에 댓글을 작성하는 comment_view.comment_create_question 함수 호출.
-    path('comment/create/question/<int:question_id>/', comment_view.comment_create_question, name='comment_create_question'),
-    
-    # 질문에 대한 댓글 수정. comment_id를 받아 해당 댓글을 수정하는 comment_view.comment_modify_question 함수 호출.
-    path('comment/modify/question/<int:comment_id>/', comment_view.comment_modify_question, name='comment_modify_question'),
-    
-    # 질문에 대한 댓글 삭제. comment_id를 받아 해당 댓글을 삭제하는 comment_view.comment_delete_question 함수 호출.
-    path('comment/delete/question/<int:comment_id>/', comment_view.comment_delete_question, name='comment_delete_question'),
 ]

@@ -5,6 +5,7 @@ from django.utils import timezone  # 시간 처리를 위한 유틸리티 모듈
 
 from ..forms import AnswerForm  # 답변 작성 폼
 from ..models import Question, Answer  # Question과 Answer 모델
+from .ai import process_image
 
 ########################################################################################################
 
@@ -124,4 +125,32 @@ def answer_vote(request, answer_id):
     # 추천 후 질문 상세 페이지로 리다이렉트하고 앵커로 해당 답변 위치로 이동
     return redirect('{}#answer_{}'.format(resolve_url('pybo:detail', question_id=answer.question.id), answer.id))
 
+########################################################################################################
+
+def ai_answer_create(request, question):
+    """ 
+    pybo AI 답변 등록 
+    AI가 처리한 이미지를 가져와서 답변을 생성하는 함수
+    자동으로 형식에 맞게 답변을 생성하고 저장함으로 Form을 사용하지 않음
+    """
+    print("AI Answer Create")
+    # question_id에 해당하는 Question 객체를 가져오고, 없으면 404 에러 반환
+    question_id = get_object_or_404(Question, pk=question.id)
+    
+    image_path = question.image1.path # 업로드된 이미지 경로 가져오기
+    selected_detectors = request.POST.getlist('detectors') # 선택된 탐지기 가져오기
+    selected_predictors = request.POST.getlist('predictors') # 선택된 예측기 가져오기
+    
+    # AI 처리를 위해 process_image 함수 호출
+    result_image_path = process_image(image_path, selected_detectors, selected_predictors)
+    
+    # AI 답변을 Answer 객체로 변환하여 저장
+    answer = Answer(
+        author = request.user,  # 현재 로그인한 사용자가 작성자
+        question = question_id,
+        content = "AI가 처리한 얼굴 인식 결과입니다.",
+        create_date = timezone.now(),
+        answer_image = result_image_path,
+    )
+    answer.save()  # 답변 저장
 ########################################################################################################

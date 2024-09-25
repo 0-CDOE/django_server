@@ -86,32 +86,3 @@ class Answer(models.Model):
         return self.question.subject
 
 
-# ==========================
-# Comment 모델 (댓글 및 대댓글 데이터)
-# ==========================
-class Comment(models.Model):
-    # 작성자: User 모델과 다대일 관계
-    # on_delete=models.CASCADE: User가 삭제되면 관련 댓글도 삭제됨
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
-    
-    # 댓글 내용
-    content = models.TextField()
-    
-    # 댓글 작성일시
-    create_date = models.DateTimeField()
-    
-    # 댓글 수정일시: 댓글이 수정되지 않으면 null 값을 허용
-    modify_date = models.DateTimeField(null=True, blank=True)
-    
-    # 댓글이 달린 질문과의 관계: 질문에 댓글이 달린 경우, null 값을 허용 (질문에 대한 댓글)
-    question = models.ForeignKey(Question, null=True, blank=True, related_name='comments', on_delete=models.CASCADE)
-    
-    # 댓글이 달린 답변과의 관계: 답변에 댓글이 달린 경우, null 값을 허용 (답변에 대한 댓글)
-    answer = models.ForeignKey(Answer, null=True, blank=True, on_delete=models.CASCADE)
-    
-    # 부모 댓글: 대댓글 기능을 위해 부모 댓글을 참조, null 값을 허용 (대댓글 구조)
-    parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='replies', null=True, blank=True)
-
-    # 객체를 문자열로 표현할 때 댓글 내용의 앞 20자를 반환
-    def __str__(self):
-        return self.content[:20]

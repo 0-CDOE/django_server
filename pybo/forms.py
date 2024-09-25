@@ -1,5 +1,5 @@
 from django import forms
-from pybo.models import Question, Answer, Comment
+from pybo.models import Question, Answer
 
 ########################################################################################################
 
@@ -34,34 +34,5 @@ class AnswerForm(forms.ModelForm):
             'content': '답변내용',
             'answer_image': '이미지',
         }
-
-########################################################################################################
-
-# ===================================
-# CommentForm (댓글 및 대댓글 폼)
-# ===================================
-class CommentForm(forms.ModelForm):
-    class Meta:
-        model = Comment  # 이 폼이 Comment 모델과 연결됨
-        fields = ['content', 'parent']  # 사용할 필드 (댓글 내용, 부모 댓글)
-
-        # 각 필드에 표시될 라벨을 정의
-        labels = {
-            'content': '내용',
-        }
-
-    # 폼 초기화 시 부모 댓글을 처리하기 위한 생성자
-    def __init__(self, *args, **kwargs):
-        self.parent_comment = kwargs.pop('parent_comment', None)  # 부모 댓글을 kwargs에서 분리
-        super().__init__(*args, **kwargs)
-
-    # 댓글 저장 시 부모 댓글을 설정하는 save 메서드
-    def save(self, commit=True):
-        comment = super().save(commit=False)  # 기본 save 메서드 호출 전에 데이터베이스에 저장하지 않음
-        if self.parent_comment:
-            comment.parent = self.parent_comment  # 부모 댓글이 존재하면 이를 설정
-        if commit:
-            comment.save()  # 데이터베이스에 댓글 저장
-        return comment
 
 ########################################################################################################

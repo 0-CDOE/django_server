@@ -5,6 +5,8 @@ import pickle
 import numpy as np
 import os
 from django.conf import settings
+from django.http import JsonResponse
+import asyncio
 
 # 각 단계별 클래스를 개별적으로 임포트합니다.
 from ai_system import Pipeline, Data, BaseConfig, steps, factories
@@ -45,11 +47,13 @@ def process_image(image_path, selected_detectors, selected_predictors):
     pipeline.add(steps.FaceEncoder())                           
     pipeline.add(steps.TargetFaceMatcher(target_encodings))      
     pipeline.add(steps.FacePredictor(predictors))                
-    pipeline.add(steps.FaceInfoCounter())                     
+    pipeline.add(steps.FaceInfoCounter()) 
+    
+                        
     pipeline.add(steps.InfoDrawer())
     if predictors:                            
         pipeline.add(steps.InfoWriter(font_size = 30))  
-    # pipeline.add(steps.ImageResizer(target_size=1000))      
+    # pipeline.add(steps.ImageResizer(target_size=1000))
     pipeline.add(steps.Saver())                                 
     
     image_path
@@ -60,5 +64,4 @@ def process_image(image_path, selected_detectors, selected_predictors):
     pipeline.run(data)
     logging.info(f"이미지 처리 완료: {image_path}")
     output_image_path = data.output_image_path
-    
     return output_image_path

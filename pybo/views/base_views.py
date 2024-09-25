@@ -72,11 +72,8 @@ def detail(request, question_id):
     # 주어진 question_id에 해당하는 Question 객체를 가져옵니다. 없으면 404 에러 발생
     question = get_object_or_404(Question, pk=question_id)  
     
-    # 질문에 달린 댓글들 중, 부모가 없는 댓글들(최상위 댓글)을 가져옵니다.
-    comments = question.comments.filter(parent__isnull=True)
-    
     # 템플릿에 전달할 데이터 설정 (질문, 댓글)
-    context = {'question': question, 'comments': comments}  
+    context = {'question': question}  
     
     # 템플릿 'pybo/question_detail.html'을 렌더링하여 응답 반환
     return render(request, 'pybo/question_detail.html', context)  

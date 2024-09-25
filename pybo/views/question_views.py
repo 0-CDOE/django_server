@@ -6,9 +6,10 @@ from django.http import JsonResponse
 from django.urls import reverse
 
 from ..forms import QuestionForm
-from ..models import Question, Answer
+from ..models import Question
 
-from .ai import process_image
+
+from .answer_views import ai_answer_create
 
 ########################################################################################################
 
@@ -22,38 +23,22 @@ def question_create(request):
         if form.is_valid():
             question = form.save(commit=False)  # 데이터베이스에 저장하지 않고, 객체만 반환
             question.author = request.user  # 작성자는 현재 로그인한 사용자
-            question.create_date = timezone.now()  # 현재 시간을 질문 작성일로 저장
-            question.save()
+            question.create_date = timezone.now()  # 현재 시간을 질문 작성일로 저장            
             
-            # 이미지가 업로드된 경우 AI 처리 수행
-            if question.image1:
-                image_path = question.image1.path  # 업로드된 이미지 경로 가져오기
-                
-                # 탐지기 및 예측기 목록을 POST 요청에서 가져옴
-                selected_detectors = request.POST.getlist('detectors')
-                selected_predictors = request.POST.getlist('predictors')
-                
-                # 탐지기나 예측기가 선택되었는지 확인
-                if selected_detectors or selected_predictors:
-                    # AI 모델을 이용해 이미지 처리
-                    result_image_path = process_image(image_path, selected_detectors, selected_predictors)
-                    
-                    # AI 처리 결과를 포함한 답변 생성
-                    answer = Answer(
-                        question=question,
-                        author=request.user,
-                        content="AI가 처리한 얼굴 인식 결과입니다.",
-                        answer_image=result_image_path,
-                        create_date=timezone.now(),
-                    )
-                    answer.save()  # 답변 저장
             # 이미지 파일 저장
             if 'image1' in request.FILES:
                 question.image1 = request.FILES['image1']
             if 'image2' in request.FILES:
                 question.image2 = request.FILES['image2']
-            question.save()  # 최종적으로 질문을 데이터베이스에 저장
+                
+            question.save() # 최종적으로 질문을 데이터베이스에 저장
+                            # save 후 question 객체에 id 값이 저장됨
             
+            selected_detectors = request.POST.getlist('detectors')
+            # 탐지기가 선택된 경우 AI 처리 수행
+            if selected_detectors:
+                ai_answer_create(request, question)
+                
             # 성공 시 JsonResponse로 리다이렉트 URL 반환
             return JsonResponse({'redirect_url': reverse('pybo:index')})
         else:
