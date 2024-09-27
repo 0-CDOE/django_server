@@ -149,11 +149,17 @@ def create_initial_ai_answer(question_id, user_id, selected_detectors, selected_
     
     # 질문과 사용자 객체 가져오기
     question = Question.objects.get(pk=question_id)
-    user = User.objects.get(pk=user_id)
+    
+    # 'AI'라는 슈퍼유저 객체 가져오기
+    try:
+        ai_superuser = User.objects.get(username='AI')
+    except User.DoesNotExist:
+        logger.error("슈퍼유저 'AI'가 존재하지 않습니다.")
+        return
     
     # AI 처리 중 상태로 초기 답변 생성
     answer = Answer(
-        author=user,
+        author=ai_superuser, # 'AI' 슈퍼유저를 작성자로 설정
         question=question,
         content="AI가 처리 중입니다.",  # AI 처리 중임을 알리는 메시지
         create_date=timezone.now(),
@@ -191,7 +197,6 @@ def ai_answer_update_background(answer_id, question_id, selected_detectors, sele
         # AI 처리가 완료된 후 해당 answer 객체를 업데이트
         answer.content = "AI가 처리한 얼굴 인식 결과입니다."
         answer.answer_image = result_image_path  # 처리된 이미지 경로 설정
-        answer.modify_date = timezone.now()  # 수정 시간 설정
         answer.save()  # 답변 업데이트
 
         logger.info(f"AI 처리 완료 A: {answer.id}")

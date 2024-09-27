@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load pybo_filter %}
+{% load static %}
 
 {% block content %}
 <div class="container my-3">
@@ -65,7 +66,7 @@
             {% endif %}
         </div>
     </div>
-    
+
     {% comment %} 답변 수 표시 {% endcomment %}
     <h5 class="border-bottom my-3 py-2">{{ question.answer_set.count }}개의 답변이 있습니다.</h5>
 
@@ -75,7 +76,18 @@
         <div class="card my-3">
             <div class="card-body">
                 <div class="card-text">
-                    {{ answer.content|mark }}
+
+                    {% if answer.content == "AI가 처리 중입니다." and answer.author.username == "AI" %}
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border text-primary" style="margin-right: 10px;" role="status">
+                            <span class="visually-hidden"></span>
+                        </div>
+                        {{ answer.content|mark }}
+                    </div>
+                    {% else %}
+                        {{ answer.content|mark }}
+                    {% endif %}
+
                     {% if answer.answer_image %}
                         <div>
                             <h5>업로드된 이미지:</h5>
