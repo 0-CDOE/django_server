@@ -2,20 +2,19 @@ from django.contrib import messages  # 사용자에게 메시지를 전달하는
 from django.contrib.auth.decorators import login_required  # 로그인 필요를 확인하는 데코레이터
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url  # 뷰 처리, 객체 조회, 리다이렉트, URL 처리 기능
 from django.utils import timezone  # 시간 처리를 위한 유틸리티 모듈
+import logging  # 로그 출력을 위한 모듈
 
-from ..forms import AnswerForm  # 답변 작성 폼
-from ..models import Question, Answer  # Question과 Answer 모델
-from .ai import process_image
+logger = logging.getLogger('pybo')  # 'pybo'라는 로거 생성
 
 ########################################################################################################
 
-"""
-로그아웃 상태에서는 request.user가 AnonymousUser 객체이므로 에러가 발생할 수 있음 
--> 로그인 상태에서만 답변을 작성할 수 있도록 로그인 필요 데코레이터 추가
-"""
 @login_required(login_url='common:login')  # 로그인 상태에서만 접근 가능하게 설정, 비로그인 사용자는 로그인 페이지로 리다이렉트
 def answer_create(request, question_id):
     """ pybo 답변 등록 """
+    
+    # 필요한 모듈을 함수 내부에서 import
+    from ..forms import AnswerForm  # 답변 작성 폼
+    from ..models import Question  # Question 모델
     
     # question_id에 해당하는 Question 객체를 가져오고, 없으면 404 에러 반환
     question = get_object_or_404(Question, pk=question_id)
@@ -52,6 +51,10 @@ def answer_create(request, question_id):
 @login_required(login_url='common:login')  # 로그인 상태에서만 접근 가능하게 설정
 def answer_modify(request, answer_id):
     """ pybo 답변 수정 """
+    
+    # 필요한 모듈을 함수 내부에서 import
+    from ..forms import AnswerForm  # 답변 작성 폼
+    from ..models import Answer  # Answer 모델
     
     # answer_id에 해당하는 Answer 객체를 가져오고, 없으면 404 에러 반환
     answer = get_object_or_404(Answer, pk=answer_id)
@@ -91,6 +94,9 @@ def answer_modify(request, answer_id):
 def answer_delete(request, answer_id):
     """ pybo 답변 삭제 """
     
+    # 필요한 모듈을 함수 내부에서 import
+    from ..models import Answer  # Answer 모델
+    
     # answer_id에 해당하는 Answer 객체를 가져오고, 없으면 404 에러 반환
     answer = get_object_or_404(Answer, pk=answer_id)
     
@@ -111,6 +117,9 @@ def answer_delete(request, answer_id):
 def answer_vote(request, answer_id):
     """ pybo 답변 추천 """
     
+    # 필요한 모듈을 함수 내부에서 import
+    from ..models import Answer  # Answer 모델
+    
     # answer_id에 해당하는 Answer 객체를 가져오고, 없으면 404 에러 반환
     answer = get_object_or_404(Answer, pk=answer_id)
     
@@ -127,30 +136,71 @@ def answer_vote(request, answer_id):
 
 ########################################################################################################
 
-def ai_answer_create(request, question):
+from background_task import background
+
+def create_initial_ai_answer(question_id, user_id, selected_detectors, selected_predictors):
     """ 
-    pybo AI 답변 등록 
-    AI가 처리한 이미지를 가져와서 답변을 생성하는 함수
-    자동으로 형식에 맞게 답변을 생성하고 저장함으로 Form을 사용하지 않음
+    pybo AI 처리 중인 상태로 초기 답변 생성 
     """
-    print("AI Answer Create")
-    # question_id에 해당하는 Question 객체를 가져오고, 없으면 404 에러 반환
-    question_id = get_object_or_404(Question, pk=question.id)
+    from django.contrib.auth.models import User  # User 모델 import
+    from ..models import Question, Answer  # Question과 Answer 모델
     
-    image_path = question.image1.path # 업로드된 이미지 경로 가져오기
-    selected_detectors = request.POST.getlist('detectors') # 선택된 탐지기 가져오기
-    selected_predictors = request.POST.getlist('predictors') # 선택된 예측기 가져오기
+    logger.info(f"초기 답변 생성 Q: {question_id}")
     
-    # AI 처리를 위해 process_image 함수 호출
-    result_image_path = process_image(image_path, selected_detectors, selected_predictors)
+    # 질문과 사용자 객체 가져오기
+    question = Question.objects.get(pk=question_id)
+    user = User.objects.get(pk=user_id)
     
-    # AI 답변을 Answer 객체로 변환하여 저장
+    # AI 처리 중 상태로 초기 답변 생성
     answer = Answer(
-        author = request.user,  # 현재 로그인한 사용자가 작성자
-        question = question_id,
-        content = "AI가 처리한 얼굴 인식 결과입니다.",
-        create_date = timezone.now(),
-        answer_image = result_image_path,
+        author=user,
+        question=question,
+        content="AI가 처리 중입니다.",  # AI 처리 중임을 알리는 메시지
+        create_date=timezone.now(),
     )
-    answer.save()  # 답변 저장
+    answer.save()  # 답변을 우선 저장
+    
+    # 백그라운드 작업을 실행하도록 호출 (task 예약)
+    ai_answer_update_background(
+        answer_id=answer.id,
+        question_id=question_id,
+        selected_detectors=selected_detectors,
+        selected_predictors=selected_predictors
+    )
+
+@background(schedule=1)  # 1초 후 실행되도록 설정
+def ai_answer_update_background(answer_id, question_id, selected_detectors, selected_predictors):
+    """ 
+    1초 후 백그라운드에서 AI 처리를 실행하고 답변을 업데이트 
+    """
+    from ..models import Question, Answer  # Question과 Answer 모델
+    from .ai import process_image  # AI 이미지 처리 함수
+    
+    logger.info(f"AI 처리 중 Q: {question_id}")
+    
+    # 질문과 사용자 객체 가져오기
+    question = Question.objects.get(pk=question_id)
+    answer = Answer.objects.get(pk=answer_id)
+
+    image_path = question.image1.path  # 업로드된 이미지 경로 가져오기
+
+    try:
+        # AI 처리를 위해 process_image 함수 호출
+        result_image_path = process_image(image_path, selected_detectors, selected_predictors)
+
+        # AI 처리가 완료된 후 해당 answer 객체를 업데이트
+        answer.content = "AI가 처리한 얼굴 인식 결과입니다."
+        answer.answer_image = result_image_path  # 처리된 이미지 경로 설정
+        answer.modify_date = timezone.now()  # 수정 시간 설정
+        answer.save()  # 답변 업데이트
+
+        logger.info(f"AI 처리 완료 A: {answer.id}")
+    
+    except Exception as e:
+        # 에러 발생 시 로그 출력 및 실패 메시지 처리
+        logger.error(f"AI 처리 실패 Q: {question_id}, Error: {str(e)}")
+        answer.content = "AI 처리 중 오류가 발생했습니다."
+        answer.modify_date = timezone.now()  # 수정 시간 설정
+        answer.save()  # 오류 상태로 답변 업데이트
+
 ########################################################################################################

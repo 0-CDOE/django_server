@@ -4,9 +4,10 @@ import logging
 import pickle
 import numpy as np
 import os
-from django.conf import settings
-from django.http import JsonResponse
-import asyncio
+from django.conf import settings  # settings.py 파일의 설정을 사용하기 위한 임포트
+import logging  # 로그 출력을 위한 모듈
+
+logger = logging.getLogger('pybo')  # 'pybo'라는 로거 생성
 
 # 각 단계별 클래스를 개별적으로 임포트합니다.
 from ai_system import Pipeline, Data, BaseConfig, steps, factories
@@ -20,6 +21,7 @@ def process_image(image_path, selected_detectors, selected_predictors):
     """
     메인 함수로, 전체 파이프라인을 구성하고 실행합니다.
     """
+    logger.info(f"AI 처리 중 fn: {image_path}")
     # 설정 정보를 가져옵니다.
     config = CustomConfig.get_config()
 

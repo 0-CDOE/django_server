@@ -4,12 +4,15 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from django.http import JsonResponse
 from django.urls import reverse
+import logging  # 로그 출력을 위한 모듈
+
+logger = logging.getLogger('pybo')  # 'pybo'라는 로거 생성
 
 from ..forms import QuestionForm
 from ..models import Question
 
 
-from .answer_views import ai_answer_create
+from .answer_views import create_initial_ai_answer
 
 ########################################################################################################
 
@@ -34,13 +37,22 @@ def question_create(request):
             question.save() # 최종적으로 질문을 데이터베이스에 저장
                             # save 후 question 객체에 id 값이 저장됨
             
-            selected_detectors = request.POST.getlist('detectors')
-            # 탐지기가 선택된 경우 AI 처리 수행
+            selected_detectors = request.POST.getlist('detectors')  # 선택된 탐지기 가져오기
+            selected_predictors = request.POST.getlist('predictors')  # 선택된 예측기 가져오기
+            
+            # 탐지기가 선택된 경우 AI 처리를 백그라운드에서 수행
             if selected_detectors:
-                ai_answer_create(request, question)
+                logger.info(f"AI 처리 시작 Q: {question.id}")
+                # request 객체 대신 필요한 정보만 전달
+                create_initial_ai_answer(
+                    question_id=question.id,
+                    user_id=request.user.id,
+                    selected_detectors=selected_detectors,
+                    selected_predictors=selected_predictors
+                )
                 
             # 성공 시 JsonResponse로 리다이렉트 URL 반환
-            return JsonResponse({'redirect_url': reverse('pybo:index')})
+            return JsonResponse({'redirect_url': reverse('pybo:detail', args=[question.id])})
         else:
             # 폼이 유효하지 않은 경우, 에러 메시지 반환
             return JsonResponse({'error': form.errors}, status=400)
