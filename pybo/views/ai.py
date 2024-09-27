@@ -48,11 +48,11 @@ def process_image(image_path, selected_detectors, selected_predictors):
     pipeline.add(steps.TargetFaceMatcher(target_encodings))      
     pipeline.add(steps.FacePredictor(predictors))                
     pipeline.add(steps.FaceInfoCounter()) 
-    
-                        
     pipeline.add(steps.InfoDrawer())
+    
     if predictors:                            
         pipeline.add(steps.InfoWriter(font_size = 30))  
+        
     # pipeline.add(steps.ImageResizer(target_size=1000))
     pipeline.add(steps.Saver())                                 
     
