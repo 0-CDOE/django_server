@@ -15,16 +15,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-from pybo.views import base_views
 from django.conf.urls.static import static
 from django.conf import settings
+from django.views.generic import RedirectView
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pybo/', include('pybo.urls')),
     path('common/', include('common.urls')),
-    path('', base_views.index, name='index'),  # '/' 에 해당되는 path
+    path('', RedirectView.as_view(url='/pybo/')),  # 루트 URL을 'pybo'로 리다이렉트
 ]
 
 handler404 = 'common.views.page_not_found'

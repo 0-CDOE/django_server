@@ -1,23 +1,21 @@
 {% extends 'base.html' %}
 
-{% load pybo_filter %}
-{% comment %} add 필터에는 변수를 적용할 수 없기 때문에 만든 filter 모듈 {% endcomment %}
-
 {% block title %}질문 목록{% endblock %}
 
 {% block content %}
 <div class="container my-3">
 
+    {% comment %} 질문 등록 버튼과 검색창 {% endcomment %}
     <div class="row my-3">
         <div class="col-6">
             {% comment %} 질문 등록 버튼 {% endcomment %}
             <a href="{% url 'pybo:question_create' %}" class="btn btn-primary">질문 등록</a>
         </div>
 
-        {% comment %} 검색창 start {% endcomment %}
         <div class="col-6">
+            {% comment %} 검색창 {% endcomment %}
             <div class="input-group">
-                {% comment %} 검색 키워드를 입력하는 필드 {% endcomment %}
+                {% comment %} 검색어 입력 필드, 기존 검색어를 유지 {% endcomment %}
                 <input type="text" id="search_kw" class="form-control" value="{{ kw|default_if_none:'' }}">
                 <div class="input-group-append">
                     {% comment %} 검색 버튼 {% endcomment %}
@@ -25,10 +23,9 @@
                 </div>
             </div>
         </div>
-        {% comment %} 검색창 end {% endcomment %}
     </div>
 
-    {% comment %} 질문 목록 출력 start {% endcomment %}
+    {% comment %} 질문 목록 테이블 {% endcomment %}
     <table class="table">
         <thead class="text-center">
             <tr class="thead-dark">
@@ -40,143 +37,113 @@
             </tr>
         </thead>
         <tbody>
-            {% if QList %}
-                {% for question in QList %}
+            {% comment %} 질문 목록이 있을 경우 {% endcomment %}
+            {% if question_indices %}
+                {% for index, question in question_indices %}
                     <tr class="text-center">
-                        {% comment %} 질문 번호 계산 및 출력 {% endcomment %}
+                        {% comment %} 질문 번호 출력 (전체 목록 기준) {% endcomment %}
+                        <td>{{ index }}</td>
+
+                        {% comment %} 추천 수가 1개 이상일 경우 추천 수 표시 {% endcomment %}
                         <td>
-                            {{ QList.paginator.count|sub:QList.start_index|sub:forloop.counter0|add:1 }}
-                        </td>
-                        {% comment %} 추천 수 출력 (추천이 1개 이상일 때만 출력) {% endcomment %}
-                        <td>
-                            {% if question.voter.all.count > 0 %}
-                                <span class="badge badge-warning">{{ question.voter.all.count }}</span> 
+                            {% if question.voter.count > 0 %}
+                                <span class="badge badge-warning">{{ question.voter.count }}</span>
                             {% endif %}
                         </td>
-                        {% comment %} 질문 제목 및 답변 개수 출력 {% endcomment %}
+
+                        {% comment %} 질문 제목 및 답변 개수 표시 {% endcomment %}
                         <td class="text-start">
                             <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>
                             {% if question.answer_set.count > 0 %}
                                 <span class="text-danger small mx-2">{{ question.answer_set.count }}</span>
                             {% endif %}
                         </td>
-                        {% comment %} 질문 작성자 및 작성 날짜 출력 {% endcomment %}
+
+                        {% comment %} 질문 작성자 및 작성일시 표시 {% endcomment %}
                         <td>{{ question.author.username }}</td>
                         <td>{{ question.create_date }}</td>
                     </tr>
                 {% endfor %}
             {% else %}
-                {% comment %} 질문이 없을 때 출력할 메시지 {% endcomment %}
+                {% comment %} 질문이 없을 때 메시지 출력 {% endcomment %}
                 <tr>
-                    <td colspan="4">질문이 없습니다.</td>
+                    <td colspan="5">질문이 없습니다.</td>
                 </tr>
             {% endif %}
         </tbody>
     </table>
-    {% comment %} 질문 목록 출력 end {% endcomment %}
 
-    {% comment %} 페이징 처리 start {% endcomment %}
+    {% comment %} 페이지네이션 {% endcomment %}
     <ul class="pagination justify-content-center">
-        {% if QList.has_previous %}
-            {% comment %} 이전 페이지로 이동하는 링크 {% endcomment %}
+        {% comment %} 이전 페이지로 이동 (비활성화 상태일 경우 버튼 비활성화) {% endcomment %}
+        {% if page_obj.has_previous %}
             <li class="page-item">
-                <a class="page-link" data-page="{{ QList.previous_page_number }}" href="javascript:void(0)">
-                    이전
-                </a>
+                <a class="page-link" data-page="{{ page_obj.previous_page_number }}" href="javascript:void(0)">이전</a>
             </li>
         {% else %}
-            {% comment %} 이전 페이지가 없으면 비활성화 {% endcomment %}
             <li class="page-item disabled">
                 <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
             </li>
         {% endif %}
 
-        {% comment %} 페이지 번호를 출력하는 반복문 {% endcomment %}
-        {% for page_number in QList.paginator.page_range %}
-            {% if page_number >= QList.number|add:-5 and page_number <= QList.number|add:5 %}
-                {% if page_number == QList.number %}
-                    {% comment %} 현재 페이지는 활성 상태로 표시 {% endcomment %}
+        {% comment %} 페이지 번호 출력 (현재 페이지는 활성화 표시) {% endcomment %}
+        {% for page_number in page_obj.paginator.page_range %}
+            {% if page_number >= page_obj.number|add:-5 and page_number <= page_obj.number|add:5 %}
+                {% if page_number == page_obj.number %}
+                    {% comment %} 현재 페이지 (활성화된 페이지) {% endcomment %}
                     <li class="page-item active" aria-current="page">
-                        <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">
-                            {{ page_number }}
-                        </a>
+                        <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
                     </li>
                 {% else %}
-                    {% comment %} 다른 페이지 링크 {% endcomment %}
+                    {% comment %} 다른 페이지로 이동하는 링크 {% endcomment %}
                     <li class="page-item">
-                        <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">
-                            {{ page_number }}
-                        </a>
+                        <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
                     </li>
                 {% endif %}
             {% endif %}
         {% endfor %}
 
-        {% if QList.has_next %}
-            {% comment %} 다음 페이지로 이동하는 링크 {% endcomment %}
+        {% comment %} 다음 페이지로 이동 (비활성화 상태일 경우 버튼 비활성화) {% endcomment %}
+        {% if page_obj.has_next %}
             <li class="page-item">
-                <a class="page-link" data-page="{{ QList.next_page_number }}" href="javascript:void(0)">다음</a>
+                <a class="page-link" data-page="{{ page_obj.next_page_number }}" href="javascript:void(0)">다음</a>
             </li>
         {% else %}
-            {% comment %} 다음 페이지가 없으면 비활성화 {% endcomment %}
             <li class="page-item disabled">
                 <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
             </li>
         {% endif %}
     </ul>
-    {% comment %} 페이징 처리 end {% endcomment %}
 
 </div>
 
-{% comment %} 검색 폼 start {% endcomment %}
-{% comment %} 검색 결과를 서버로 전송하기 위한 숨겨진 폼 {% endcomment %}
-<form id="searchForm" method="get" action="{% url 'index' %}">
-    {% comment %} 검색 키워드를 서버로 전송하기 위한 숨겨진 필드 {% endcomment %}
+{% comment %} 검색 폼 (숨겨진 필드) {% endcomment %}
+<form id="searchForm" method="get" action="{% url 'pybo:index' %}">
+    {% comment %} 검색어를 유지하는 숨겨진 필드 {% endcomment %}
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
-    {% comment %} 현재 페이지 번호를 서버로 전송하기 위한 숨겨진 필드 {% endcomment %}
+    {% comment %} 현재 페이지 번호를 유지하는 숨겨진 필드 {% endcomment %}
     <input type="hidden" id="page" name="page" value="{{ page }}">
 </form>
-{% comment %} 검색 폼 end {% endcomment %}
 
 {% endblock %}
 
 {% block script %}
 <script type='text/javascript'>
-
-    // 페이지 링크를 가져와서 클릭 이벤트를 설정합니다.
-    // 각 페이지 링크는 페이지 번호를 데이터 속성으로 가지고 있으며, 이 번호를 이용해 페이지 이동을 처리합니다.
+    // 페이지 링크에 클릭 이벤트 추가 (페이지 이동)
     const page_elements = document.getElementsByClassName("page-link");
-
-    // 'page_elements'는 HTMLCollection을 반환하므로 이를 배열로 변환하여 각 요소에 접근할 수 있습니다.
     Array.from(page_elements).forEach(function(element) {
-
-        // 각 페이지 링크에 대해 클릭 이벤트를 추가합니다.
         element.addEventListener('click', function() {
-
-            // 클릭된 링크의 데이터 속성 'data-page'에서 페이지 번호를 가져와
-            // 검색 폼의 숨겨진 'page' 입력 필드에 값을 설정합니다.
-            document.getElementById('page').value = this.dataset.page;
-
-            // 검색 폼을 제출하여 해당 페이지로 이동합니다.
-            document.getElementById('searchForm').submit();
+            document.getElementById('page').value = this.dataset.page;  // 페이지 번호 설정
+            document.getElementById('searchForm').submit();  // 폼 제출
         });
     });
 
-    // 검색 버튼을 가져와 클릭 이벤트를 설정합니다.
+    // 검색 버튼 클릭 시 검색어 설정 및 폼 제출
     const btn_search = document.getElementById("btn_search");
-
-    // 검색 버튼에 대해 클릭 이벤트를 추가합니다.
     btn_search.addEventListener('click', function() {
-
-        // 검색 입력 필드의 값을 가져와 검색 폼의 숨겨진 'kw' 입력 필드에 설정합니다.
-        document.getElementById('kw').value = document.getElementById('search_kw').value;
-
-        // 검색이 수행되면 항상 첫 페이지(1페이지)부터 결과를 보여주기 위해 'page' 필드를 1로 설정합니다.
-        document.getElementById('page').value = 1;
-
-        // 검색 폼을 제출하여 입력된 키워드로 검색을 수행합니다.
-        document.getElementById('searchForm').submit();
+        document.getElementById('kw').value = document.getElementById('search_kw').value;  // 검색어 설정
+        document.getElementById('page').value = 1;  // 검색 시 항상 1페이지로 이동
+        document.getElementById('searchForm').submit();  // 폼 제출
     });
-
 </script>
 {% endblock %}

@@ -1,7 +1,5 @@
-{% extends 'base.html' %}
-{% block content %}
+{% comment %} form_partial.html - 공통 폼 템플릿 {% endcomment %}
 
-{% comment %} 답변 수정 페이지 {% endcomment %}
 <div class="container my-3">
 
     {% comment %} 폼 제출을 위한 POST 요청 처리와 파일 업로드를 위한 enctype 설정 {% endcomment %}
@@ -18,5 +16,3 @@
         <button type="submit" class="btn btn-primary">{{ button_text }}</button>
     </form>
 </div>
-
-{% endblock %}

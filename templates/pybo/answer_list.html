@@ -1,0 +1,50 @@
+{% load pybo_filter %}
+{% for answer in question.answer_set.all %}
+    <a id="answer_{{ answer.id }}"></a>
+    <div class="card my-3">
+        <div class="card-body">
+            <div class="card-text">
+                {% if answer.content == "AI가 처리 중입니다." and answer.author.username == "AI" %}
+                    <div class="d-flex align-items-center">
+                        <div class="spinner-border text-primary" style="margin-right: 10px;" role="status">
+                            <span class="visually-hidden"></span>
+                        </div>
+                        {{ answer.content|mark }}
+                    </div>
+                {% else %}
+                    {{ answer.content|mark }}
+                {% endif %}
+
+                {% if answer.answer_image %}
+                    <div>
+                        <h5>업로드된 이미지:</h5>
+                        <img src="{{ answer.answer_image.url }}" alt="Uploaded Image" style="max-width: 300px; height: auto;">
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+                {% if answer.modify_date %}
+                    <div class="badge bg-light text-dark p-2 text-start mx-3">
+                        <div class="mb-2">modified at</div>
+                        <div>{{ answer.modify_date }}</div>
+                    </div>
+                {% endif %}
+                <div class="badge bg-light text-dark p-2 text-start">
+                    <div class="mb-2">{{ answer.author.username }}</div>
+                    <div>{{ answer.create_date }}</div>
+                </div>
+            </div>
+
+            <div class="my-3">
+                <a href="javascript:void(0)" data-uri="{% url 'pybo:answer_vote' answer.id %}" class="recommend btn btn-sm btn-outline-secondary">
+                    추천 <span class="badge rounded-pill bg-success">{{ answer.voter.count }}</span>
+                </a>
+                {% if request.user == answer.author %}
+                    <a href="{% url 'pybo:answer_modify' answer.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
+                    <a href="#" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'pybo:answer_delete' answer.id %}">삭제</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endfor %}

@@ -1,11 +1,7 @@
 from django import forms
 from pybo.models import Question, Answer
 
-########################################################################################################
 
-# ===================================
-# QuestionForm (질문 생성 및 수정 폼)
-# ===================================
 class QuestionForm(forms.ModelForm):
     class Meta:
         model = Question  # 이 폼이 Question 모델과 연결됨
@@ -19,11 +15,7 @@ class QuestionForm(forms.ModelForm):
             'image2': '이미지2',
         }
 
-########################################################################################################
 
-# ===================================
-# AnswerForm (답변 생성 및 수정 폼)
-# ===================================
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer  # 이 폼이 Answer 모델과 연결됨
@@ -35,4 +27,3 @@ class AnswerForm(forms.ModelForm):
             'answer_image': '이미지',
         }
 
-########################################################################################################

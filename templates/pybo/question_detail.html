@@ -19,10 +19,7 @@
     <h2 class="border-bottom py-2">{{ question.subject }}</h2>
 
     <div class="card-body">
-        {% comment %} 질문 내용 표시 {% endcomment %}
         <div class="card-text">{{ question.content|mark }}</div>
-
-        {% comment %} 질문 작성 및 수정 정보 표시 {% endcomment %}
         <div class="d-flex justify-content-end">
             {% if question.modify_date %}
                 <div class="badge bg-light text-dark p-2 text-start mx-3">
@@ -36,125 +33,69 @@
             </div>
         </div>
 
-        {% comment %} 업로드된 이미지1 표시 {% endcomment %}
+        {% comment %} 업로드된 이미지 표시 {% endcomment %}
         {% if question.image1 %}
-            <div>
-                <h5>업로드된 이미지1:</h5>
-                <img src="{{ question.image1.url }}" alt="Uploaded Image" style="max-width: 300px; height: auto;">
-            </div>
+            <div><h5>업로드된 이미지1:</h5><img src="{{ question.image1.url }}" alt="Uploaded Image" style="max-width: 300px;"></div>
         {% endif %}
-
-        {% comment %} 업로드된 이미지2 표시 {% endcomment %}
         {% if question.image2 %}
-            <div>
-                <h5>업로드된 이미지2:</h5>
-                <img src="{{ question.image2.url }}" alt="Uploaded Image" style="max-width: 300px; height: auto;">
-            </div>
+            <div><h5>업로드된 이미지2:</h5><img src="{{ question.image2.url }}" alt="Uploaded Image" style="max-width: 300px;"></div>
         {% endif %}
 
-        {% comment %} 추천 및 수정/삭제 버튼 {% endcomment %}
         <div class="my-3">
             <a href="javascript:void(0)" data-uri="{% url 'pybo:question_vote' question.id %}" class="recommend btn btn-sm btn-outline-secondary">
                 추천 <span class="badge rounded-pill bg-success">{{ question.voter.count }}</span>
             </a>
-            
             {% if request.user == question.author %}
                 <a href="{% url 'pybo:question_modify' question.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
-                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'pybo:question_delete' question.id %}">
-                    삭제
-                </a>
+                <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'pybo:question_delete' question.id %}">삭제</a>
             {% endif %}
+            
+            {% if messages %}
+            <ul>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        
         </div>
     </div>
 
-    {% comment %} 답변 수 표시 {% endcomment %}
     <h5 class="border-bottom my-3 py-2">{{ question.answer_set.count }}개의 답변이 있습니다.</h5>
 
-    {% comment %} 답변 리스트 표시 {% endcomment %}
-    {% for answer in question.answer_set.all %}
-        <a id="answer_{{ answer.id }}"></a>
-        <div class="card my-3">
-            <div class="card-body">
-                <div class="card-text">
+    {% comment %} 답변 리스트 부분 템플릿 사용 {% endcomment %}
+    {% include "pybo/answer_list.html" %}
 
-                    {% if answer.content == "AI가 처리 중입니다." and answer.author.username == "AI" %}
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border text-primary" style="margin-right: 10px;" role="status">
-                            <span class="visually-hidden"></span>
-                        </div>
-                        {{ answer.content|mark }}
-                    </div>
-                    {% else %}
-                        {{ answer.content|mark }}
-                    {% endif %}
+    {% comment %} 답변 등록 폼 부분 템플릿 사용 {% endcomment %}
+    {% include "pybo/base_form.html" with button_text='답변 등록' %}
 
-                    {% if answer.answer_image %}
-                        <div>
-                            <h5>업로드된 이미지:</h5>
-                            <img src="{{ answer.answer_image.url }}" alt="Uploaded Image" style="max-width: 300px; height: auto;">
-                        </div>
-                    {% endif %}
-                </div>
-
-                {% comment %} 답변 작성 및 수정 정보 표시 {% endcomment %}
-                <div class="d-flex justify-content-end">
-                    {% if answer.modify_date %}
-                        <div class="badge bg-light text-dark p-2 text-start mx-3">
-                            <div class="mb-2">modified at</div>
-                            <div>{{ answer.modify_date }}</div>
-                        </div>
-                    {% endif %}
-                    <div class="badge bg-light text-dark p-2 text-start">
-                        <div class="mb-2">{{ answer.author.username }}</div>
-                        <div>{{ answer.create_date }}</div>
-                    </div>
-                </div>
-
-                {% comment %} 답변에 대한 추천 및 수정/삭제 버튼 {% endcomment %}
-                <div class="my-3">
-                    <a href="javascript:void(0)" data-uri="{% url 'pybo:question_vote' question.id %}" class="recommend btn btn-sm btn-outline-secondary">
-                        추천 <span class="badge rounded-pill bg-success">{{ question.voter.count }}</span>
-                    </a>
-                    {% if request.user == answer.author %}
-                        <a href="{% url 'pybo:answer_modify' answer.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
-                        <a href="#" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'pybo:answer_delete' answer.id %}">삭제</a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    {% endfor %}
-
-    {% comment %} 답변 등록 폼 {% endcomment %}
-    <form action="{% url 'pybo:answer_create' question.id %}" method="post" enctype="multipart/form-data" class="my-3">
-        {% csrf_token %}
-        {% include "form_errors.html" %}
-        <div class="form-group">
-            <textarea name="content" id="content" class="form-control" rows="10" {% if not user.is_authenticated %}disabled{% endif %}></textarea>
-        </div>
-        <input type="submit" value="답변 등록" class="btn btn-primary">
-    </form>
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-    $(document).ready(function() {
-
+    document.addEventListener('DOMContentLoaded', function() {
         // 삭제 버튼 클릭 시 확인 대화상자
-        $('.delete').on('click', function() {
-            if (confirm("정말로 삭제하시겠습니까?")) {
-                location.href = $(this).data('uri');  // jQuery에서 data-attribute 접근
-            }
+        var deleteButtons = document.querySelectorAll('.delete');
+        deleteButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                if (confirm("정말로 삭제하시겠습니까?")) {
+                    window.location.href = button.getAttribute('data-uri');  // data-attribute 접근
+                }
+            });
         });
-
+    
         // 추천 버튼 클릭 시 확인 대화상자
-        $('.recommend').on('click', function() {
-            if (confirm("정말로 추천하시겠습니까?")) {
-                location.href = $(this).data('uri');  // jQuery에서 data-attribute 접근
-            }
+        var recommendButtons = document.querySelectorAll('.recommend');
+        recommendButtons.forEach(function(button) {
+            button.addEventListener('click', function() {
+                if (confirm("정말로 추천하시겠습니까?")) {
+                    window.location.href = button.getAttribute('data-uri');  // data-attribute 접근
+                }
+            });
         });
-
     });
+    
 </script>
 {% endblock %}
 

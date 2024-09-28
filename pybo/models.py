@@ -33,23 +33,7 @@ class Question(models.Model):
     
     # 이미지2: 질문에 첨부된 두 번째 이미지, null과 빈 값을 허용하지 않음
     image2 = models.ImageField(upload_to='pybo/image2/', null=False, blank=False, verbose_name='업로드 이미지2')
-
-    # save 메서드를 오버라이드하여 기존 이미지 파일을 삭제한 후 새로운 이미지로 교체
-    def save(self, *args, **kwargs):
-        # Question 객체가 이미 존재할 경우 (pk가 있는 경우)
-        if self.pk:
-            old_objects = Question.objects.get(pk=self.pk)
-            # 기존 이미지1을 새 이미지로 대체할 경우, 이전 파일 삭제
-            if old_objects.image1 and old_objects.image1 != self.image1:
-                if os.path.isfile(old_objects.image1.path):
-                    os.remove(old_objects.image1.path)
-            # 기존 이미지2를 새 이미지로 대체할 경우, 이전 파일 삭제
-            if old_objects.image2 and old_objects.image2 != self.image2:
-                if os.path.isfile(old_objects.image2.path):
-                    os.remove(old_objects.image2.path)
-        # 장고의 기본 save 메서드 호출
-        super(Question, self).save(*args, **kwargs)
-
+    
     # 객체를 문자열로 표현할 때 질문 제목을 반환
     def __str__(self):
         return self.subject
