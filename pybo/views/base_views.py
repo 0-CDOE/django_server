@@ -1,9 +1,11 @@
 from django.db.models import Q  # 검색 조건을 위한 Q 객체
 from django.views.generic import ListView, DetailView  # 제네릭 뷰 사용
-from ..models import Question  # Question 모델 가져오기
 import logging  # 로그 출력을 위한 모듈
 
 logger = logging.getLogger('pybo')  # 'pybo'라는 로거 생성
+
+from ..models import Question  # Question 모델 가져오기
+from ..forms import AnswerForm
 
 
 class QuestionListView(ListView):
@@ -48,3 +50,8 @@ class QuestionDetailView(DetailView):
     model = Question
     template_name = 'pybo/question_detail.html'  # 사용할 템플릿
     context_object_name = 'question'  # 템플릿에서 사용할 변수명
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['form'] = AnswerForm()  # 답변 등록 폼을 컨텍스트에 추가
+        return context

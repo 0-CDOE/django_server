@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404, redirect  # 객체 조회 및 �
 from django.utils import timezone  # 시간 처리를 위한 유틸리티 모듈
 from django.views.generic import CreateView, UpdateView, DeleteView  # 제네릭 뷰 사용
 from django.urls import reverse, reverse_lazy  # URL 처리를 위한 모듈
-from django.views import View  # 뷰 클래스
+from django.contrib.auth.decorators import login_required
+
 import logging  # 로그 출력을 위한 모듈
 
 # 로깅 설정
@@ -14,61 +15,25 @@ logger = logging.getLogger('pybo')
 from ..models import Question, Answer  # Question과 Answer 모델
 from ..forms import AnswerForm  # AnswerForm 폼
 
-class AnswerCreateView(LoginRequiredMixin, CreateView):
-    """
-    답변 생성 뷰
-    사용자가 답변 폼을 제출하면 답변을 생성하고,
-    해당 답변을 저장한 뒤 질문 상세 페이지로 리다이렉트합니다.
-    """
-    model = Answer  # Answer 모델을 기반으로 함
-    form_class = AnswerForm  # AnswerForm 폼을 사용
-    template_name = 'pybo/question_detail.html'  # 질문 상세 페이지를 사용
 
+class AnswerFormMixin:
     def form_valid(self, form):
-        """
-        폼이 유효한 경우 호출됨.
-        답변을 생성하고 질문 상세 페이지로 리다이렉트합니다.
-        """
         answer = form.save(commit=False)
         answer.author = self.request.user
         answer.create_date = timezone.now()
         answer.question = get_object_or_404(Question, pk=self.kwargs['pk'])
         answer.save()
-
         return redirect(reverse('pybo:detail', kwargs={'pk': answer.question.pk}))
 
-    def get_context_data(self, **kwargs):
-        """
-        템플릿에 추가할 컨텍스트 데이터를 반환.
-        질문 객체를 함께 넘겨 폼과 연결합니다.
-        """
-        context = super().get_context_data(**kwargs)
-        context['question'] = get_object_or_404(Question, pk=self.kwargs['pk'])  # 질문 객체를 컨텍스트에 추가
-        return context
+class AnswerCreateView(LoginRequiredMixin, AnswerFormMixin, CreateView):
+    model = Answer
+    form_class = AnswerForm
+    template_name = 'pybo/question_detail.html'
 
-class AnswerUpdateView(LoginRequiredMixin, UpdateView):
-    """
-    답변 수정 뷰
-    사용자가 수정된 답변을 제출하면 해당 답변을 업데이트하고
-    질문 상세 페이지로 리다이렉트합니다.
-    """
-    model = Answer  # Answer 모델을 기반으로 함
-    form_class = AnswerForm  # AnswerForm 폼을 사용
-    template_name = 'pybo/answer_form.html'  # 답변 수정 템플릿 경로 지정
-
-    def form_valid(self, form):
-        """
-        폼이 유효한 경우 호출됨.
-        답변을 생성하고 질문 상세 페이지로 리다이렉트합니다.
-        """
-        answer = form.save(commit=False)
-        answer.author = self.request.user
-        answer.create_date = timezone.now()
-        answer.question = get_object_or_404(Question, pk=self.kwargs['pk'])
-        answer.save()
-
-        return redirect(reverse('pybo:detail', kwargs={'pk': answer.question.pk}))
-    
+class AnswerUpdateView(LoginRequiredMixin, AnswerFormMixin, UpdateView):
+    model = Answer
+    form_class = AnswerForm
+    template_name = 'pybo/answer_form.html'
 
 class AnswerDeleteView(LoginRequiredMixin, DeleteView):
     """
@@ -98,29 +63,24 @@ class AnswerDeleteView(LoginRequiredMixin, DeleteView):
         answer.delete()
         return redirect(self.get_success_url())
 
-
-class AnswerVoteView(LoginRequiredMixin, View):
+@login_required
+def answer_vote(request, pk):
     """
-    답변 추천 처리 뷰
+    답변 추천 처리 함수 뷰
     로그인한 사용자가 자신의 답변이 아닌 다른 답변을 추천할 수 있습니다.
     """
-    def post(self, request, *args, **kwargs):
-        """
-        POST 요청으로 답변 추천 처리.
-        작성자는 자신의 답변을 추천할 수 없습니다.
-        """
-        # 추천할 답변 객체를 가져옴
-        answer = get_object_or_404(Answer, pk=self.kwargs['pk'])
+    # 추천할 답변 객체를 가져옴
+    answer = get_object_or_404(Answer, pk=pk)
 
-        # 작성자가 자신의 답변을 추천하지 못하게 처리
-        if request.user == answer.author:
-            messages.error(request, '본인이 작성한 글은 추천할 수 없습니다.')
-        else:
-            # 답변 추천 처리
-            answer.voter.add(request.user)
+    # 작성자가 자신의 답변을 추천하지 못하게 처리
+    if request.user == answer.author:
+        messages.error(request, '본인이 작성한 글은 추천할 수 없습니다.')
+    else:
+        # 답변 추천 처리
+        answer.voter.add(request.user)
 
-        # 질문 상세 페이지로 리다이렉트
-        return redirect('pybo:detail', pk=answer.question.pk)
+    # 질문 상세 페이지로 리다이렉트
+    return redirect('pybo:detail', pk=answer.question.pk)
 
 
 # ===============================================

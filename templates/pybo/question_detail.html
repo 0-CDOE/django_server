@@ -43,19 +43,11 @@
 
         <div class="my-3">
             <a href="javascript:void(0)" data-uri="{% url 'pybo:question_vote' question.id %}" class="recommend btn btn-sm btn-outline-secondary">
-                추천 <span class="badge rounded-pill bg-success">{{ question.voter.count }}</span>
+                추천 <span class="badge rounded-pill bg-success" id="voter-count">{{ question.voter.count }}</span>
             </a>
             {% if request.user == question.author %}
                 <a href="{% url 'pybo:question_modify' question.id %}" class="btn btn-sm btn-outline-secondary">수정</a>
                 <a href="javascript:void(0)" class="delete btn btn-sm btn-outline-secondary" data-uri="{% url 'pybo:question_delete' question.id %}">삭제</a>
-            {% endif %}
-            
-            {% if messages %}
-            <ul>
-                {% for message in messages %}
-                <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
             {% endif %}
         
         </div>
@@ -95,8 +87,30 @@
             });
         });
     });
-    
+    document.addEventListener('DOMContentLoaded', function() {
+        // 추천 버튼 클릭 시 AJAX 요청 처리
+        var recommendButton = document.querySelector('.recommend');
+        recommendButton.addEventListener('click', function() {
+            var url = recommendButton.getAttribute('data-uri');
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');  // CSRF 토큰 설정
+
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    // 추천 수 업데이트
+                    document.getElementById('voter-count').textContent = response.voter_count;
+                    // 메시지 출력
+                } else if (xhr.readyState === 4 && xhr.status === 400) {
+                    var response = JSON.parse(xhr.responseText);
+                }
+            };
+
+            xhr.send();
+        });
+    });
 </script>
 {% endblock %}
-
 

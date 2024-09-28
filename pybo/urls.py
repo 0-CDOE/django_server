@@ -10,7 +10,7 @@ urlpatterns = [
     path('question/create/', question_views.QuestionCreateView.as_view(), name='question_create'),
     path('question/modify/<int:pk>/', question_views.QuestionUpdateView.as_view(), name='question_modify'),
     path('question/delete/<int:pk>/', question_views.QuestionDeleteView.as_view(), name='question_delete'),
-    path('question/vote/ajax/<int:pk>/', question_views.QuestionVoteAjaxView.as_view(), name='question_vote'),
+    path('question/vote/ajax/<int:pk>/', question_views.question_vote_ajax, name='question_vote'),
     
     path('answer/create/<int:pk>/', answer_views.AnswerCreateView.as_view(), name='answer_create'),
     path('answer/modify/<int:pk>/', answer_views.AnswerUpdateView.as_view(), name='answer_modify'),
