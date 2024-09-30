@@ -75,6 +75,7 @@ class QuestionFormMixin:
         else:
             return redirect('pybo:detail', pk=question.id)  # 일반 요청 시 리다이렉트
 
+
 class QuestionCreateView(LoginRequiredMixin, QuestionFormMixin, CreateView):
     """
     질문 생성 뷰
@@ -93,8 +94,6 @@ class QuestionUpdateView(LoginRequiredMixin, QuestionFormMixin, UpdateView):
     form_class = QuestionForm
     template_name = 'pybo/question_form.html'
     login_url = 'common:login'
-
-
 
 
 class QuestionDeleteView(LoginRequiredMixin, DeleteView):

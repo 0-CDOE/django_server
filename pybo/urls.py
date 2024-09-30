@@ -15,5 +15,5 @@ urlpatterns = [
     path('answer/create/<int:pk>/', answer_views.AnswerCreateView.as_view(), name='answer_create'),
     path('answer/modify/<int:pk>/', answer_views.AnswerUpdateView.as_view(), name='answer_modify'),
     path('answer/delete/<int:pk>/', answer_views.AnswerDeleteView.as_view(), name='answer_delete'),
-    path('answer/vote/<int:pk>/', answer_views.AnswerVoteView.as_view(), name='answer_vote'),
+    path('answer/vote/<int:pk>/', answer_views.answer_vote, name='answer_vote'),
 ]

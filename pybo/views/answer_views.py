@@ -159,3 +159,5 @@ def ai_answer_update_background(answer_id, question_id, selected_detectors, sele
         answer.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
         answer.modify_date = timezone.now()
         answer.save()
+
+# ===============================================
