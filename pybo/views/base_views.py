@@ -16,6 +16,7 @@ class QuestionListView(ListView):
     def get_queryset(self):
         """ 검색어 필터링 및 최신순 정렬 """
         kw = self.request.GET.get('kw', '')  # 검색어
+        logger.info(f"검색어: {kw}")  # 검색어를 로그로 출력
         question_list = Question.objects.order_by('-create_date')  # 최신순 정렬
 
         if kw:
@@ -53,5 +54,6 @@ class QuestionDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = AnswerForm()  # 답변 등록 폼을 컨텍스트에 추가
+        context['form'] = AnswerForm()
         return context
+    

@@ -37,6 +37,9 @@ ALLOWED_HOSTS = []
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
+# 로그인 페이지 URL
+LOGIN_URL = '/common/login/'  
+
 # 기본 자동 생성 기본 키 타입을 명시적으로 설정
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

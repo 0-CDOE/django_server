@@ -1,34 +1,70 @@
-{% load static %}
+{% load static %}  {# 정적 파일 로드 #}
 <!DOCTYPE html>
-<html lang="ko">
-<title>Poliviosn</title>
+<html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    {% comment %} Bootstrap CSS {% endcomment %}
-    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
-    {% comment %} pybo CSS {% endcomment %}
-    <link rel="stylesheet" href="{% static 'style.css' %}">
-    <title>Hello, pybo!</title>
+    {% comment %} 메타데이터 및 페이지 설정 {% endcomment %}
+    <meta charset="utf-8">  {# 문자 인코딩 설정 #}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">  {# IE 호환성 설정 #}
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">  {# 반응형 웹 디자인을 위한 뷰포트 설정 #}
+    <meta name="description" content="">  {# 페이지 설명 #}
+    <meta name="author" content="">  {# 페이지 작성자 #}
 
-    <style>
-    </style>
+    {% comment %} 페이지 제목 {% endcomment %}
+    <title>LoliPoli</title>  {# 브라우저 탭에 표시될 제목 #}
+
+    {% comment %} 외부 폰트 및 아이콘 사용을 위한 링크 {% endcomment %}
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">  {# Font Awesome 아이콘 스타일 시트 #}
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">  {# Google Fonts #}
+
+    {% comment %} 페이지 스타일 및 DataTables 스타일 {% endcomment %}
+    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">  {# Admin 스타일 시트 #}
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">  {# DataTables 스타일 시트 #}
 </head>
-<body>
-    {% include 'navbar.html' %}
-    {% comment %} 기본 템플릿 안에 삽입될 내용 Start {% endcomment %}
-    {% block content %} 
+
+<body id="page-top" class="d-flex flex-column">  {# 페이지 상단 고정 및 플렉스 레이아웃 설정 #}
+
+    {% comment %} 페이지 전체 Wrapper 시작 {% endcomment %}
+    <div id="wrapper" class="d-flex">  {# 플렉스 레이아웃을 위한 래퍼 #}
+
+        {% comment %} 사이드바: 외부 파일에서 가져오기 {% endcomment %}
+        {% include "sidebar.html" %}  {# 사이드바 포함 #}
+
+        {% comment %} 컨텐츠 Wrapper (메인 컨텐츠 영역) {% endcomment %}
+        <div id="content-wrapper" class="d-flex flex-column flex-grow-1">  {# 플렉스 레이아웃 및 성장 설정 #}
+
+            {% comment %} 메인 컨텐츠 영역 시작 {% endcomment %}
+            <div id="content" class="flex-grow-1">  {# 컨텐츠가 성장하도록 설정 #}
+
+                {% comment %} 페이지 컨텐츠 시작 {% endcomment %}
+                <div class="container-fluid">  {# 플루이드 컨테이너 #}
+
+                    {% comment %} 컨텐츠 블록: 자식 템플릿에서 채울 수 있는 부분 {% endcomment %}
+                    {% block content %}  {# 자식 템플릿이 내용을 삽입할 위치 #}
+                    {% endblock %}
+                    
+                </div>
+                {% comment %} 페이지 컨텐츠 끝 {% endcomment %}
+            </div>
+            {% comment %} 메인 컨텐츠 끝 {% endcomment %}
+            
+        </div>
+        {% comment %} 컨텐츠 Wrapper 끝 {% endcomment %}
+    </div>
+    {% comment %} 페이지 전체 Wrapper 끝 {% endcomment %}
+
+    {% comment %} 자바스크립트 블록 (자식 템플릿에서 확장 가능) {% endcomment %}
+    {% block script %}  {# 자식 템플릿에서 사용할 자바스크립트 코드 삽입 #}
     {% endblock %}
 
-    {% comment %} 기본 템플릿 안에 삽입될 내용 End {% endcomment %}
-
-    {% comment %} jQuery JS {% endcomment %}
-    <script src="{% static 'jquery-3.4.1.min.js' %}"></script>
-    <!-- Bootstrap JS -->
-    <script src="{% static 'bootstrap.min.js' %}"></script>
-    {% comment %} 자바스크립트 Start {% endcomment %}
-    {% block script %}
-    {% endblock %}
-    {% comment %} 자바스크립트 End {% endcomment %}
+    {% comment %} 외부 스크립트 파일 로드 {% endcomment %}
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>  {# jQuery 라이브러리 #}
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>  {# Bootstrap JavaScript 번들 #}
+    <script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>  {# jQuery 이징 플러그인 #}
+    <script src="{% static 'js/sb-admin-2.min.js' %}"></script>  {# Admin 페이지 전반에 걸친 스크립트 #}
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>  {# DataTables 라이브러리 #}
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>  {# DataTables Bootstrap 통합 #}
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>  {# DataTables 데모 스크립트 #}
 </body>
+
 </html>

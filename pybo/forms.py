@@ -3,11 +3,37 @@ from pybo.models import Question, Answer
 
 
 class QuestionForm(forms.ModelForm):
+    # 커스텀 필드 정의
+    DETECTOR_CHOICES = [
+        ('dlib', 'Dlib'),
+        ('yolo', 'YOLO'),
+        ('mtcnn', 'MTCNN'),
+    ]
+    
+    PREDICTOR_CHOICES = [
+        ('fairface', 'FairFace'),
+    ]
+    
+    # 탐지기(Detectors) 체크박스 필드
+    detectors = forms.MultipleChoiceField(
+        choices=DETECTOR_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        label='탐지기 (Detectors)',
+        required=False
+    )
+    
+    # 예측기(Predictors) 체크박스 필드
+    predictors = forms.MultipleChoiceField(
+        choices=PREDICTOR_CHOICES,
+        widget=forms.CheckboxSelectMultiple,
+        label='예측기 (Predictors)',
+        required=False
+    )
+
     class Meta:
-        model = Question  # 이 폼이 Question 모델과 연결됨
-        fields = ['subject', 'content', 'image1', 'image2']  # 사용할 필드 (제목, 내용, 이미지1, 이미지2)
-        
-        # 각 필드에 표시될 라벨을 정의
+        model = Question
+        fields = ['subject', 'content', 'image1', 'image2']  # 기존 필드
+
         labels = {
             'subject': '제목',
             'content': '내용',

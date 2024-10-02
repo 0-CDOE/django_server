@@ -70,11 +70,11 @@ class Data:
         self.config = config
         self.image_path = image_path
         
-        # OpenCV를 사용하여 이미지 로드
+        # OpenCV를 사용하여 이지 로드
         image = cv2.imread(self.image_path)
         if image is None:
             # 이미지 로드 실패 시 예외 발생
-            raise ValueError(f"이미지를 로드할 수 없습니다: {self.image_path}")
+            raise ValueError(f"이미지를 로드할 수미 없습니다: {self.image_path}")
         
         # BGR 이미지를 RGB로 변환
         self.image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
