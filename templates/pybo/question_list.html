@@ -3,6 +3,7 @@
 {% block title %}질문 목록{% endblock %}
 
 {% block content %}
+{% load custom_tags %} 
 {% comment %} 네비게이션 바 (상단바) 포함: 외부 파일에서 가져오기 {% endcomment %}
 {% include "topbar.html" %}
 
@@ -22,30 +23,30 @@
 
         <tbody>
             {% comment %} 질문 목록이 있을 경우 {% endcomment %}
-            {% if question_indices %}
-                {% for index, question in question_indices %}
+            {% if object_indices %}
+                {% for index, post in object_indices %}
                     <tr class="text-center">
                         {% comment %} 질문 번호 출력 (전체 목록 기준) {% endcomment %}
                         <td>{{ index }}</td>
 
                         {% comment %} 추천 수가 1개 이상일 경우 추천 수 표시 {% endcomment %}
                         <td>
-                            {% if question.voter.count > 0 %}
-                                <span class="badge badge-warning">{{ question.voter.count }}</span>  {# 추천 수 표시 #}
+                            {% if post.voter.count > 0 %}
+                                <span class="badge badge-warning">{{ post.voter.count }}</span>  {# 추천 수 표시 #}
                             {% endif %}
                         </td>
 
                         {% comment %} 질문 제목 및 답변 개수 표시 {% endcomment %}
                         <td class="text-start">
-                            <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>  {# 질문 제목 링크 #}
-                            {% if question.answer_set.count > 0 %}
-                                <span class="text-danger small mx-2">{{ question.answer_set.count }}</span>  {# 답변 개수 표시 #}
+                            <a href="{% url_byME 'post' 'read' post.id %}">{{ post.subject }}</a>  {# 질문 제목 링크 #}
+                            {% if post.answers.count > 0 %}
+                                <span class="text-danger small mx-2">{{ post.answers.count }}</span>  {# 답변 개수 표시 #}
                             {% endif %}
                         </td>
 
                         {% comment %} 질문 작성자 및 작성일시 표시 {% endcomment %}
-                        <td>{{ question.author.username }}</td>  {# 작성자 이름 #}
-                        <td>{{ question.create_date }}</td>  {# 작성일시 #}
+                        <td>{{ post.author.username }}</td>  {# 작성자 이름 #}
+                        <td>{{ post.create_date }}</td>  {# 작성일시 #}
                     </tr>
                 {% endfor %}
             {% else %}
@@ -102,7 +103,7 @@
 </div>
 
 {% comment %} 검색 폼 (숨겨진 필드) {% endcomment %}
-<form id="searchForm" method="get" action="{% url 'pybo:index' %}">
+<form id="searchForm" method="get" action="{% url_byME 'post' 'list' %}">
     {% comment %} 검색어를 유지하는 숨겨진 필드 {% endcomment %}
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
 

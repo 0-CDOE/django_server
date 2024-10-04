@@ -1,86 +1,98 @@
+{% load custom_filters %}
+{% load custom_tags %}
+
+{% block title %}{{ object.subject }}{% endblock %}
+
+
+{# 답변 개수 출력 #}
 <h5 class="border-bottom my-3 py-2">
-    {{ question.answer_set.count }}개의 답변이 있습니다.
+    {{ object.comments.count }}개의 답변이 있습니다.
 </h5>
 
-{% for answer in question.answer_set.all %}
+{% for comment in processed_comments %}
     <div class="card my-3">
         <div class="card-body">
             <div class="card-text">
-                {# AI가 처리 중인 경우 스피너 표시 #}
-                {% if answer.content == "AI가 처리 중입니다." and answer.author.username == "AI" %}
+                {% if comment.is_ai_processing %}
                     <div class="d-flex align-items-center">
                         <div class="spinner-border text-primary" style="margin-right: 10px;" role="status">
                             <span class="visually-hidden"></span>
                         </div>
-                        <span id="answer-content-{{ answer.id }}">{{ answer.content|safe }}</span>
+                        <span id="comment-content-{{ comment.id }}">{{ comment.content|md_to_html }}</span>
                     </div>
-                {# 일반 답변 내용 표시 #}
                 {% else %}
-                    <span id="answer-content-{{ answer.id }}">{{ answer.content|safe }}</span>
-                {% endif %}
-
-                {# 답변에 이미지가 있을 경우 이미지 표시 #}
-                {% if answer.answer_image %}
-                    <div>
-                        <h5>업로드된 이미지:</h5>
-                        <img src="{{ answer.answer_image.url }}" alt="Uploaded Image" style="max-width: 300px; height: auto;">
-                    </div>
+                    <span id="comment-content-{{ comment.id }}">{{ comment.content|md_to_html }}</span>
                 {% endif %}
             </div>
 
-            {# 답변 수정 시간 및 작성자 표시 #}
-            <div class="d-flex justify-content-end">
-                {% if answer.modify_date %}
-                    <div class="badge bg-light text-dark p-2 text-start mx-3">
-                        <div class="mb-2">수정된 시간</div>
-                        <div>{{ answer.modify_date }}</div>
-                    </div>
-                {% endif %}
-                <div class="badge bg-light text-dark p-2 text-start">
-                    <div class="mb-2">{{ answer.author.username }}</div>
-                    <div>{{ answer.create_date }}</div>
-                </div>
-            </div>
-
-            {# 답변에 대한 추천, 수정, 삭제 버튼 표시 #}
             <div class="my-3 d-flex justify-content-between">
-                <!-- 추천 버튼 -->
-                <a href="javascript:void(0)" 
-                    data-uri="{% url 'pybo:answer_vote' answer.id %}" 
-                    class="recommend btn btn-sm btn-success me-2">
-                    추천 <span class="badge bg-light text-success">{{ answer.voter.count }}</span>
-                </a>
+                <div>
+                    <a href="javascript:void(0)" 
+                       data-uri="{% url 'pybo:similarity_comment_vote' comment.id %}" 
+                       class="recommend btn btn-sm btn-success me-2 {% if comment.is_author %} disabled {% endif %}"
+                       {% if comment.is_author %} aria-disabled="true" {% endif %}>
+                       추천 <span class="badge bg-light text-success">{{ comment.voter_count }}</span>
+                    </a>
+                </div>
 
-                {# 답변 작성자만 수정 및 삭제 가능 #}
-                {% if request.user == answer.author %}
-                    <div class="d-flex">
-                        <!-- 수정 버튼 -->
-                        <a href="{% url 'pybo:answer_update' answer.id %}" 
-                            class="btn btn-sm btn-warning me-2 answer-update">
-                            <i class="fas fa-edit"></i> 수정
-                        </a>
-
-                        <!-- 삭제 버튼 -->
-                        <a href="javascript:void(0)" 
-                            class="delete btn btn-sm btn-danger" 
-                            data-uri="{% url 'pybo:answer_delete' answer.id %}">
-                            <i class="fas fa-trash-alt"></i> 삭제
-                        </a>
-                    </div>
-                {% endif %}
+                <div>
+                    {% if comment.is_author %}
+                        <div class="d-flex justify-content-end">
+                            <a href="{% url_byME 'comment' 'delete' comment_id=comment.id %}" 
+                               class="btn btn-sm btn-warning me-2 comment-update">
+                               <i class="fas fa-edit"></i> 수정
+                            </a>
+                            <a href="javascript:void(0)" 
+                               class="delete btn btn-sm btn-danger" 
+                               data-uri="{% url_byME 'comment' 'delete' comment.id %}">
+                               <i class="fas fa-trash-alt"></i> 삭제
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 {% endfor %}
 
-{# 답변 등록 폼 #}
-<form action="{% url 'pybo:answer_create' question.id %}" method="post" enctype="multipart/form-data" class="my-3">
-    {% csrf_token %}  {# CSRF 보호를 위한 토큰 #}
-    {% include "form_errors.html" %}  {# 폼 오류 메시지 포함 #}
-    {{ form.as_p }}  {# 폼 필드 출력 #}
-    <input type="submit" value="답변 등록" class="btn btn-primary">  {# 제출 버튼 #}
+
+{# 답변 작성 폼 #}
+<form method="post" enctype="multipart/form-data" class="my-3" action="{% url_byME 'comment' 'create' object.id %}">
+    {% csrf_token %}
+
+    {# 답변 내용 입력 폼 #}
+    <div class="mb-3">
+        <label for="id_content" class="form-label">답변 내용</label>
+        {{ form.content|add_class:"form-control" }}
+        {% if form.content.errors %}
+            <div class="invalid-feedback">
+                {{ form.content.errors }}
+            </div>
+        {% endif %}
+    </div>
+    
+    {# 이미지 업로드 폼 #}
+    <div class="mb-3">
+        <label for="image1" class="form-label">이미지1</label>
+        {{ form.image1|add_class:"form-control" }}
+        {% if form.image1.errors %}
+            <div class="invalid-feedback">
+                {{ form.image1.errors }}
+            </div>
+        {% endif %}
+        <label for="image2" class="form-label">이미지2</label>
+        {{ form.image2|add_class:"form-control" }}
+        {% if form.image2.errors %}
+            <div class="invalid-feedback">
+                {{ form.image2.errors }}
+            </div>
+        {% endif %}
+    </div>
+    
+    <button type="submit" class="btn btn-primary">답변 등록</button>
 </form>
 
+{# 자바스크립트 코드 블록 #}
 {% block script %}
 <script>
     {# 스크립트 블록은 나중에 필요한 자바스크립트 코드를 여기에 추가하는 데 사용될 수 있음 #}

@@ -80,6 +80,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'pybo.context_processors.url_constants', # url_constants 컨텍스트 프로세서 추가
             ],
         },
     },

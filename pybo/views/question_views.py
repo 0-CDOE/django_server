@@ -1,162 +1,129 @@
-from django.contrib import messages  # 사용자에게 메시지를 전달하는 모듈
-from django.contrib.auth.mixins import LoginRequiredMixin  # 로그인 상태 확인을 위한 믹스인
-from django.shortcuts import get_object_or_404, redirect  # 객체 조회 및 리다이렉트 기능
-from django.utils import timezone  # 시간 처리를 위한 유틸리티
-from django.urls import reverse_lazy  # URL 처리
-from django.views.generic import CreateView, UpdateView, DeleteView  # 제네릭 뷰 사용
-from django.contrib.auth.decorators import login_required
+from django.urls import reverse
+
+
+from .base_views import BaseListView, BaseDetailView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView
+from ..models import SimilarityPost
+from ..forms import QuestionForm, AnswerForm
+from .answer_views import create_initial_ai_answer
+
+from ..url_patterns import URLS
+
+# 기본 URL 설정
+app_name = URLS['APP_NAME']
+board_name = URLS['BOARD_NAME']['similarity']
+content_type = URLS['CONTENT_TYPE']
+end_point = URLS['CRUD_AND_MORE']
+
+read_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["read"]}'
+list_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["list"]}'
+
 
 import logging  # 로깅을 위한 모듈
-logger = logging.getLogger('pybo')
+logger = logging.getLogger(URLS['APP_NAME'])  # 로거 생성
+"""
+base_views.py에 정의된 BaseListView, BaseDetailView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView를 상속받아
+질문 게시판의 뷰를 정의한다.
 
-# 필요한 폼과 모델 임포트
-from ..forms import QuestionForm  # QuestionForm 임포트
-from ..models import Question  # Question 모델 임포트
-from .answer_views import create_initial_ai_answer  # AI 처리 함수 임포트
+이 때 템플릿에서 사용할 모델 객체 이름은 'object'로 사용한다.
+
+1.  이 때 템플릿 상에서 해당 모델에 정의된 모든 필드에 접근할 수 있다. (ex. object.author.username)
+
+2.  이 때 템플릿 상에서 해당 모델에 정의된 메서드들도 사용할 수 있다. (ex. object.get_absolute_url())
+
+3.  이 때 템플릿 상에서 해당 모델이 다른 모델과 ForeignKey, ManyToMany, OneToOne 등으로 연결되어 있을 경우,
+
+    related_name으로 관계된 모델 객체에도 접근할 수 있다. (ex. object.comments.all())
+                                                                            ..^^^ 연결된 모델에 정의된 메서드
+                                                                    ..^^^^^^^ related_name으로 정의된 이름
+                                                                    
+4.  이 때 템플릿 상에서 Django 모델의 메타 정보를 사용할 수도 있다. (ex. object._meta.verbose_name)
+"""
+extra_context = {
+    'app_name': app_name,
+    'board_name': board_name,
+}
+    
+class QuestionListView(BaseListView):
+    model = SimilarityPost
+    template_name = 'pybo/question_list.html'
+    search_fields = ['subject', 'content', 'author__username', 'answer__content', 'answer__author__username']
 
 
-class QuestionFormMixin:
-    """
-    질문 생성 및 수정 폼 처리를 위한 믹스인 클래스.
-    이미지 저장 로직과 폼이 유효할 때 호출되는 처리 로직을 포함한다.
-    """
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(extra_context)
+        return context
 
-    def save_uploaded_images(self, question):
-        """
-        업로드된 이미지를 질문 객체에 저장하는 함수.
-        request.FILES에서 이미지 파일을 가져와 질문 객체에 추가한다.
+class QuestionDetailView(BaseDetailView):
+    model = SimilarityPost
+    template_name = 'pybo/question_detail.html'
 
-        Args:
-            question (Question): 저장할 질문 객체.
-        """
-        if 'image1' in self.request.FILES:
-            question.image1 = self.request.FILES['image1']
-        if 'image2' in self.request.FILES:
-            question.image2 = self.request.FILES['image2']
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        post = self.get_object()
+        comments = post.comments.all()
 
+        processed_comments = self._set_context_byME(comments)
+        # 템플릿에 필요한 데이터를 추가
+        context.update({
+            'form': AnswerForm(),
+            'is_object_author': self.request.user == post.author,  # 질문 작성자인지 여부
+            'processed_comments': processed_comments,  # 답변 데이터
+        })
+        context.update(extra_context)
+
+        
+        return context
+    
+class QuestionCreateView(BaseCreateView):
+    model = SimilarityPost
+    form_class = QuestionForm
+    success_url = read_url
+    
     def form_valid(self, form):
-        """
-        폼이 유효할 경우 호출되는 메서드.
-        질문을 저장하고, AI 탐지기를 백그라운드에서 처리한다.
-
-        Args:
-            form: 제출된 질문 폼.
-
-        Returns:
-            redirect: 질문 상세 페이지로 리다이렉트.
-        """
-        # 질문 객체 생성, DB에 저장하지 않고 객체만 반환
-        question = form.save(commit=False)
-
-        # 작성자와 작성 날짜 또는 수정 날짜 설정
-        if not question.id:
-            question.author = self.request.user
-            question.create_date = timezone.now()
-        else:
-            question.modify_date = timezone.now()
-
-        # 이미지 저장 로직 호출
-        self.save_uploaded_images(question)
-        question.save()  # 질문을 DB에 저장
-
+        # 상위 클래스의 form_valid 호출 (기존 동작 유지) <<< 오버라이딩은 덮어쓰기의 개념 // 이건 이어쓰기의 개념
+        response = super().form_valid(form)
+        
+        # 추가 작업을 여기에 정의
+        
+        # 이어쓰기에 필요한 데이터
+        obj = form.instance # 질문 객체 부모 부모 클래스의 form_valid에서 생성된 객체 (form.save(commit=False)로 생성된 객체)
+        
         # 선택된 AI 탐지기 및 예측기 처리
         selected_detectors = self.request.POST.getlist('detectors')
         selected_predictors = self.request.POST.getlist('predictors')
 
         if selected_detectors:
-            logger.info(f"AI 처리 시작 - 질문 ID: {question.id}")
+            logger.info(f"AI 처리 시작 - 질문: {obj}")
             try:
                 create_initial_ai_answer(
-                    question_id=question.id,
+                    post_id=obj.id,
                     selected_detectors=selected_detectors,
                     selected_predictors=selected_predictors
                 )
-                logger.info(f"AI 처리 완료 - 질문 ID: {question.id}")
+                logger.info(f"AI 처리 완료 - 질문 ID: {obj}")
             except Exception as e:
-                logger.error(f"AI 처리 실패 - 질문 ID: {question.id}, 에러: {str(e)}")
-
-        # 질문 상세 페이지로 리다이렉트
-        return redirect('pybo:detail', pk=question.id)
-
-
-class QuestionCreateView(LoginRequiredMixin, QuestionFormMixin, CreateView):
+                logger.error(f"AI 처리 실패 - 질문 ID: {obj}, 에러: {str(e)}")
+        
+        # 상위 클래스의 결과를 반환
+        return response
+    
+class QuestionUpdateView(BaseUpdateView):
     """
-    질문 생성 뷰.
-    로그인한 사용자만 접근할 수 있으며, 질문 생성 폼을 처리한다.
+    AI 처리 로직을 Base클래스나 Mixin 클래스에서 구현 하지 않고, 
+    QuestionCreateView에서 처리함으로써,
+    QuestionUpdateView에서는 AI 처리 로직은 구현되지 않도록 함.
     """
-    model = Question
+    model = SimilarityPost
     form_class = QuestionForm
-    template_name = 'pybo/question_form.html'
-    login_url = 'common:login'
+    success_url = read_url
 
 
-class QuestionUpdateView(LoginRequiredMixin, QuestionFormMixin, UpdateView):
-    """
-    질문 수정 뷰.
-    로그인한 사용자만 접근할 수 있으며, 질문 수정 폼을 처리한다.
-    """
-    model = Question
-    form_class = QuestionForm
-    template_name = 'pybo/question_form.html'
-    login_url = 'common:login'
+class QuestionDeleteView(BaseDeleteView):
+    model = SimilarityPost
+    success_url = list_url
 
 
-class QuestionDeleteView(LoginRequiredMixin, DeleteView):
-    """
-    질문 삭제 뷰.
-    로그인한 사용자만 질문을 삭제할 수 있으며, 삭제 후 메인 페이지로 리다이렉트한다.
-    """
-    model = Question
-
-    def get(self, request, *args, **kwargs):
-        """
-        GET 요청이 들어오면 바로 삭제 처리한다.
-        """
-        return self.delete(request, *args, **kwargs)
-
-    def delete(self, request, *args, **kwargs):
-        """
-        질문 삭제 처리.
-        사용자가 작성한 질문인지 확인 후 삭제하고, 메인 페이지로 리다이렉트한다.
-
-        Args:
-            request: 사용자의 요청.
-
-        Returns:
-            redirect: 삭제 후 메인 페이지로 리다이렉트.
-        """
-        question = self.get_object()
-        if request.user != question.author:
-            messages.error(request, '삭제 권한이 없습니다.')
-            return redirect('pybo:detail', pk=question.pk)
-
-        question.delete()
-        return redirect(reverse_lazy('pybo:index'))
-
-
-@login_required(login_url='common:login')
-def question_vote(request, pk):
-    """
-    질문 추천 기능을 제공하는 뷰.
-    사용자는 질문을 추천할 수 있으며, 자신이 작성한 질문은 추천할 수 없다.
-
-    Args:
-        request: 사용자의 요청.
-        pk (int): 질문의 ID.
-
-    Returns:
-        redirect: 질문 상세 페이지로 리다이렉트.
-    """
-    # 추천할 질문을 가져옴, 없으면 404 에러 발생
-    question = get_object_or_404(Question, pk=pk)
-
-    # 작성자가 본인의 질문을 추천하려고 하면 에러 메시지 반환
-    if request.user == question.author:
-        messages.error(request, '본인이 작성한 글은 추천할 수 없습니다.')
-    elif request.user in question.voter.all():
-        messages.error(request, '이미 추천한 질문입니다.')
-    else:
-        question.voter.add(request.user)  # 추천 처리
-
-    # 질문 상세 페이지로 리다이렉트
-    return redirect('pybo:detail', pk=question.id)
+class QuestionVoteView(BaseVoteView):
+    model = SimilarityPost
+    success_url = read_url

@@ -1,0 +1,11 @@
+{% extends 'base.html' %}  {# 기본 템플릿 확장 #}
+
+{% block title %}질문 목록{% endblock %}
+
+{% block content %}
+{% comment %} 네비게이션 바 (상단바) 포함: 외부 파일에서 가져오기 {% endcomment %}
+{% include "topbar.html" %}
+{% comment %} 푸터: 외부 파일에서 포함 {% endcomment %}
+{% include "footer.html" %}
+
+{% endblock %}

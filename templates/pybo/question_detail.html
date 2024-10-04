@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
-{% load pybo_filter %}
-{% load static %}
+{% load custom_filters %}
+{% load custom_tags %}
 
 {% block content %}
 {% include "topbar.html" %}
@@ -15,56 +15,68 @@
         </div>
     {% endif %}
 
-    <h2 class="border-bottom py-2">{{ question.subject }}</h2>
+    <h2 class="border-bottom py-2">{{ object.subject }}</h2>
 
     <div class="card-body">
-        <div class="card-text">{{ question.content|mark }}</div>
+        <div class="card-text">{{ object.content|md_to_html }}</div>
 
         <div class="d-flex justify-content-end">
-            {% if question.modify_date %}
+            {% if object.modify_date %}
                 <div class="badge bg-light text-dark p-2 text-start mx-3">
                     <div class="mb-2">수정된 시간</div>
-                    <div>{{ question.modify_date }}</div>
+                    <div>{{ object.modify_date }}</div>
                 </div>
             {% endif %}
             <div class="badge bg-light text-dark p-2 text-start">
-                <div class="mb-2">{{ question.author.username }}</div>
-                <div>{{ question.create_date }}</div>
+                <div class="mb-2">{{ object.author.username }}</div>
+                <div>{{ object.create_date }}</div>
             </div>
         </div>
 
-        {% if question.image1 %}
+        <div class="my-3 d-flex justify-content-between">
+            {# 왼쪽에 추천 버튼 #}
+            <div>
+                <a href="javascript:void(0)" 
+                data-uri="{% url_byME 'post' 'vote' object.id %}" 
+                class="recommend btn btn-sm btn-success me-2 {% if is_object_author %} disabled {% endif %}"
+                {% if is_object_author %} aria-disabled="true" {% endif %}>
+                추천 <span class="badge bg-light text-success">{{ object.voter.count }}</span>
+                </a>
+            </div>
+            {# 오른쪽에 수정 및 삭제 버튼 #}
+            <div>
+                {% if is_object_author %}
+                    <div class="d-flex justify-content-end">
+                        <!-- 수정 버튼 -->
+                        <a href="{% url_byME 'post' 'update' object.id %}" 
+                            class="btn btn-sm btn-warning me-2 object-update">
+                            <i class="fas fa-edit"></i> 수정
+                        </a>
+        
+                        <!-- 삭제 버튼 -->
+                        <a href="javascript:void(0)" 
+                            class="delete btn btn-sm btn-danger" 
+                            data-uri="{% url_byME 'post' 'delete' object.id %}">
+                            <i class="fas fa-trash-alt"></i> 삭제
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if object.image1 %}
             <div>
                 <h5>업로드된 이미지1:</h5>
-                <img src="{{ question.image1.url }}" alt="Uploaded Image" style="max-width: 300px;">
+                <img src="{{ object.image1.url }}" alt="Uploaded Image" style="max-width: 300px;">
             </div>
         {% endif %}
-        {% if question.image2 %}
+        {% if object.image2 %}
             <div>
                 <h5>업로드된 이미지2:</h5>
-                <img src="{{ question.image2.url }}" alt="Uploaded Image" style="max-width: 300px;">
+                <img src="{{ object.image2.url }}" alt="Uploaded Image" style="max-width: 300px;">
             </div>
         {% endif %}
-
-        <div class="my-3 d-flex justify-content-start">
-            <!-- 추천 버튼 -->
-            <button id="recommend-btn" data-uri="{% url 'pybo:question_vote' question.id %}" class="recommend btn btn-outline-success me-3">
-                <i class="fas fa-thumbs-up"></i> 추천 <span class="badge bg-light text-success" id="voter-count">{{ question.voter.count }}</span>
-            </button>
-
-
-            {% if request.user == question.author %}
-                <a href="{% url 'pybo:question_update' question.id %}" class="btn btn-outline-warning me-3">
-                    <i class="fas fa-edit"></i> 수정
-                </a>
-                <a href="javascript:void(0)" class="delete btn btn-outline-danger" data-uri="{% url 'pybo:question_delete' question.id %}">
-                    <i class="fas fa-trash-alt"></i> 삭제
-                </a>
-            {% endif %}
-        </div>
-    </div>
-
     {% include "pybo/answer_list.html" %}
+
 </div>
 {% endblock %}
 

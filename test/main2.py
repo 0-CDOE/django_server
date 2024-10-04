@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 # 각 단계별 클래스를 개별적으로 임포트합니다.
-from ai_system import Pipeline, Data, BaseConfig, steps, factories
+from ..ai_system import Pipeline, Data, BaseConfig, steps, factories
 
 def main():
     """

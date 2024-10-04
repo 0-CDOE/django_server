@@ -1,5 +1,5 @@
 from django import forms
-from pybo.models import Question, Answer
+from pybo.models import SimilarityPost, SimilarityComment, DetectionPost, DetectionComment
 
 
 class QuestionForm(forms.ModelForm):
@@ -31,7 +31,7 @@ class QuestionForm(forms.ModelForm):
     )
 
     class Meta:
-        model = Question
+        model = SimilarityPost
         fields = ['subject', 'content', 'image1', 'image2']  # 기존 필드
 
         labels = {
@@ -44,12 +44,33 @@ class QuestionForm(forms.ModelForm):
 
 class AnswerForm(forms.ModelForm):
     class Meta:
-        model = Answer  # 이 폼이 Answer 모델과 연결됨
-        fields = ['content', 'answer_image']  # 사용할 필드 (답변 내용, 첨부 이미지)
+        model = SimilarityComment  # 이 폼이 Answer 모델과 연결됨
+        fields = ['content', 'image1', 'image2']  # 사용할 필드 (답변 내용, 첨부 이미지)
         
         # 각 필드에 표시될 라벨을 정의
         labels = {
             'content': '답변내용',
-            'answer_image': '이미지',
+            'image1': '이미지1',
+            'image2': '이미지2',
         }
 
+class DetectionForm(forms.ModelForm):
+    class Meta:
+        model = DetectionPost
+        fields = ['subject', 'content', 'image1']
+        
+        labels = {
+            'subject': '제목',
+            'content': '내용',
+            'image1': '이미지1',
+        }
+
+class DetectionCommentForm(forms.ModelForm):
+    class Meta:
+        model = DetectionComment
+        fields = ['content', 'image1']
+        
+        labels = {
+            'content': '댓글내용',
+            'image1': '이미지1',
+        }

@@ -5,7 +5,7 @@
         <div class="row justify-content-center align-items-center">  {# 중앙 정렬을 위한 플렉스 레이아웃 #}
             <div class="col-2">
                 {% comment %} 질문 등록 버튼 {% endcomment %}
-                <a href="{% url 'pybo:question_create' %}" class="btn btn-primary">질문 등록</a>
+                {% comment %} <a href="{% url 'pybo:question_create' %}" class="btn btn-primary">질문 등록</a> {% endcomment %}
             </div>
             {% comment %} 검색창 (중앙 배치, 넓이 조정) {% endcomment %}
             <div class="col-md-6">  {# 중간 크기의 화면에서 6/12 폭을 사용하는 검색창 #}

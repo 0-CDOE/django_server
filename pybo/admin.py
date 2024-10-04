@@ -1,5 +1,5 @@
 from django.contrib import admin
-from pybo.models import Question
+from pybo.models import SimilarityPost
 
 # =============================
 # QuestionAdmin (관리자 설정)
@@ -11,4 +11,4 @@ class QuestionAdmin(admin.ModelAdmin):
 
 # Question 모델을 관리자(admin) 페이지에 등록하고,
 # QuestionAdmin 설정을 함께 적용하여 검색 기능 등 추가적인 설정이 반영되도록 함
-admin.site.register(Question, QuestionAdmin)
+admin.site.register(SimilarityPost, QuestionAdmin)
