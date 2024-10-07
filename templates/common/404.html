@@ -1,21 +1,34 @@
 {% extends 'base.html' %}
 
 {% block content %}
-{% comment %} 404 페이지 컨텐츠 시작 {% endcomment %}
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-12 text-center">
+    
+    {# 404 에러 페이지의 내용을 정의하는 부분 #}
+    
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-12 text-center">
+                
+                {% comment %} 
+                큰 글씨로 404 에러 코드를 표시합니다. 
+                'display-1' 클래스는 큰 글씨를, 'd-block'은 블록처럼 표시하는 역할을 합니다.
+                {% endcomment %}
+                <span class="display-1 d-block">404</span>
+                
+                {% comment %} 
+                사용자가 찾는 페이지를 찾지 못했다는 간결한 메시지를 표시합니다.
+                'lead' 클래스는 이 메시지를 눈에 띄게 만들어 줍니다.
+                {% endcomment %}
+                <div class="mb-4 lead">페이지를 찾을 수 없어</div>
 
-            {% comment %} 404 에러 코드, 큰 폰트로 표시 {% endcomment %}
-            <span class="display-1 d-block">404</span>
-
-            {% comment %} 404 에러 메시지, 페이지를 찾을 수 없음을 알림 {% endcomment %}
-            <div class="mb-4 lead">페이지를 찾을 수 없어</div>
-
-            {% comment %} 홈으로 돌아가는 링크 버튼 {% endcomment %}
-            <a href="/" class="btn btn-link">돌아가</a>
+                {% comment %}
+                사용자가 홈 페이지로 돌아갈 수 있는 버튼을 제공합니다.
+                '/'는 홈 페이지 경로를 나타내며, 'btn-link'는 버튼을 링크처럼 보여줍니다.
+                {% endcomment %}
+                <a href="/" class="btn btn-link">돌아가</a>
+            </div>
         </div>
     </div>
-</div>
-{% comment %} 404 페이지 컨텐츠 끝 {% endcomment %}
+    
+    {# 404 에러 페이지 끝 #}
+    
 {% endblock %}

@@ -6,7 +6,9 @@
 
 <div class="container my-3">
 
-    {% comment %} 알림 메시지 표시 {% endcomment %}
+    {% comment %}
+    알림 메시지가 있는 경우, 화면에 표시합니다. 예를 들어, 추천이나 삭제와 같은 액션 후 발생하는 메시지들을 처리합니다.
+    {% endcomment %}
     {% if messages %}
         {% for message in messages %}
             {% if 'post' in message.tags %}
@@ -17,23 +19,29 @@
         {% endfor %}
     {% endif %}
     
+    {# 게시물의 제목을 표시합니다. 'border-bottom' 클래스로 제목 아래에 선을 추가하여 구분합니다. #}
     <h2 class="border-bottom py-2">{{ post.subject }}</h2>
 
     <div class="card-body">
+        {# 게시물의 내용을 표시합니다. 내용은 markdown 형식으로 작성된 텍스트를 HTML로 변환하여 출력합니다. #}
         <div class="card-text">{{ post.content|md_to_html }}</div>
 
+        {# 작성자 정보와 게시물 작성 및 수정 시간을 표시합니다. 정보는 오른쪽에 정렬됩니다. #}
         <div class="d-flex justify-content-end">
             <div class="badge bg-light text-dark p-2 text-start">
                 <div class="mb-2">{{ post.author.username }} : {{ post.create_date }}</div>
                 <hr class="my-2">
                 {% if post.modify_date %}
+                    {# 게시물이 수정된 경우, 수정된 날짜와 시간을 표시합니다. #}
                     <div class="mb-2">modified at : {{ post.modify_date }}</div>
                 {% endif %}
             </div>
         </div>
 
+        {# 게시물에 대한 추천, 수정, 삭제 버튼을 표시하는 영역입니다. #}
         <div class="my-3 d-flex justify-content-between">
-            {# 왼쪽에 추천 버튼 #}
+
+            {# 추천 버튼: 게시물을 추천할 수 있습니다. 작성자 본인은 추천할 수 없으므로, 작성자일 경우 버튼을 비활성화합니다. #}
             <div>
                 <a href="{% url_byME 'post' 'vote' post.id %}#post-{{ post.id }}" 
                    class="recommend btn btn-sm btn-success me-2 {% if is_author %} disabled {% endif %}"
@@ -41,14 +49,17 @@
                     추천 <span class="badge bg-light text-success">{{ post.voter.count }}</span>
                 </a>
             </div>
-            {# 오른쪽에 수정 및 삭제 버튼 #}
+
+            {# 수정 및 삭제 버튼: 게시물 작성자만 수정 및 삭제할 수 있습니다. #}
             <div>
                 {% if is_author %}
                     <div class="d-flex justify-content-end">
+                        {# 수정 버튼: 게시물을 수정할 수 있습니다. #}
                         <a href="{% url_byME 'post' 'update' post.id %}#post-{{ post.id }}" 
                            class="btn btn-sm btn-warning me-2 post-update">
                            <i class="fas fa-edit"></i> 수정
                         </a>
+                        {# 삭제 버튼: 게시물을 삭제할 수 있습니다. 클릭하면 확인 대화상자가 표시됩니다. #}
                         <a href="javascript:void(0)" 
                            class="delete btn btn-sm btn-danger" 
                            data-uri="{% url_byME 'post' 'delete' post.id %}">
@@ -59,6 +70,7 @@
             </div>
         </div>
 
+        {# 업로드된 이미지가 있는 경우, 이미지를 표시합니다. 각 이미지는 최대 너비가 300px로 제한됩니다. #}
         {% if post.image1 %}
             <div>
                 <h5>업로드된 이미지1:</h5>
@@ -72,6 +84,7 @@
             </div>
         {% endif %}
 
+        {# 댓글 리스트를 포함하는 템플릿을 불러옵니다. #}
     {% include "pybo/answer_list.html" %}
 
 </div>
@@ -79,12 +92,13 @@
 
 {% block script %}
 <script>
-    // 삭제 버튼 클릭 시 확인 대화상자
+    {# 삭제 버튼을 클릭할 때, 사용자에게 확인 대화상자를 띄워서 정말로 삭제할 것인지 묻습니다. #}
     var deleteButtons = document.querySelectorAll('.delete');
 
     deleteButtons.forEach(function(button) {
         button.addEventListener('click', function() {
             if (confirm("정말로 삭제하시겠습니까?")) {
+                {# 사용자가 확인을 누르면 해당 게시물을 삭제하는 URL로 이동하여 삭제가 처리됩니다. #}
                 window.location.href = button.getAttribute('data-uri'); 
             }
         });

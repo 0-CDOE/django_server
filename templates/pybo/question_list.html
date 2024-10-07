@@ -5,19 +5,18 @@
 {% block content %}
 {% load custom_tags %} 
 
-    {% comment %} 알림 메시지 표시 {% endcomment %}
+    {% comment %} 알림 메시지 표시 영역. 에러나 중요한 메시지를 화면에 출력합니다. {% endcomment %}
     {% if messages %}
-    
         {% for message in messages %}
         <div class="alert alert-danger my-3" role="alert">
             <ul><li>{{ message.message }}</li></ul>
-            </div>
-            {% endfor %}
-        
+        </div>
+        {% endfor %}
     {% endif %}
+
 <div class="container my-3">  {# 질문 목록을 담는 컨테이너 #}
 
-    {% comment %} 질문 목록 테이블 {% endcomment %}
+    {% comment %} 질문 목록을 테이블 형식으로 보여줍니다. {% endcomment %}
     <table class="table">
         <thead class="text-center">
             <tr class="thead-dark">
@@ -30,21 +29,21 @@
         </thead>
 
         <tbody>
-            {% comment %} 질문 목록이 있을 경우 {% endcomment %}
+            {% comment %} 질문 목록이 있는 경우 해당 내용을 테이블에 표시합니다. {% endcomment %}
             {% if post_indices %}
                 {% for index, post in post_indices %}
                     <tr class="text-center">
-                        {% comment %} 질문 번호 출력 (전체 목록 기준) {% endcomment %}
+                        {# 질문 번호는 전체 목록 기준으로 표시됩니다. #}
                         <td>{{ index }}</td>
 
-                        {% comment %} 추천 수가 1개 이상일 경우 추천 수 표시 {% endcomment %}
+                        {# 추천 수가 1개 이상일 경우 추천 수를 배지로 표시합니다. #}
                         <td>
                             {% if post.voter.count > 0 %}
                                 <span class="badge badge-warning">{{ post.voter.count }}</span>  {# 추천 수 표시 #}
                             {% endif %}
                         </td>
 
-                        {% comment %} 질문 제목 및 답변 개수 표시 {% endcomment %}
+                        {# 질문 제목과 답변 개수 링크로 표시합니다. 제목을 클릭하면 질문 상세 페이지로 이동합니다. #}
                         <td class="text-start">
                             <a href="{% url_byME 'post' 'read' post.id %}">{{ post.subject }}</a>  {# 질문 제목 링크 #}
                             {% if post.comments.count > 0 %}
@@ -52,13 +51,13 @@
                             {% endif %}
                         </td>
 
-                        {% comment %} 질문 작성자 및 작성일시 표시 {% endcomment %}
+                        {# 질문 작성자 이름과 작성일시를 표시합니다. #}
                         <td>{{ post.author.username }}</td>  {# 작성자 이름 #}
                         <td>{{ post.create_date }}</td>  {# 작성일시 #}
                     </tr>
                 {% endfor %}
             {% else %}
-                {% comment %} 질문이 없을 때 메시지 출력 {% endcomment %}
+                {% comment %} 질문이 없는 경우 메시지를 출력합니다. {% endcomment %}
                 <tr>
                     <td colspan="5">질문이 없습니다.</td>  {# 질문이 없는 경우 메시지 표시 #}
                 </tr>
@@ -66,9 +65,9 @@
         </tbody>
     </table>
 
-    {% comment %} 페이지네이션 {% endcomment %}
+    {% comment %} 페이지네이션(페이지 이동) 영역을 설정합니다. {% endcomment %}
     <ul class="pagination justify-content-center">
-        {% comment %} 이전 페이지로 이동 (비활성화 상태일 경우 버튼 비활성화) {% endcomment %}
+        {# 이전 페이지 버튼, 페이지가 첫 페이지인 경우 비활성화됩니다. #}
         {% if page_obj.has_previous %}
             <li class="page-item">
                 <a class="page-link" data-page="{{ page_obj.previous_page_number }}" href="javascript:void(0)">이전</a>
@@ -79,16 +78,16 @@
             </li>
         {% endif %}
 
-        {% comment %} 페이지 번호 출력 (현재 페이지는 활성화 표시) {% endcomment %}
+        {% comment %} 페이지 번호를 출력합니다. 현재 페이지는 활성화된 상태로 표시됩니다. {% endcomment %}
         {% for page_number in page_obj.paginator.page_range %}
             {% if page_number >= page_obj.number|add:-5 and page_number <= page_obj.number|add:5 %}
                 {% if page_number == page_obj.number %}
-                    {% comment %} 현재 페이지 (활성화된 페이지) {% endcomment %}
+                    {# 현재 페이지는 강조하여 표시됩니다. #}
                     <li class="page-item active" aria-current="page">
                         <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
                     </li>
                 {% else %}
-                    {% comment %} 다른 페이지로 이동하는 링크 {% endcomment %}
+                    {# 클릭하면 해당 페이지로 이동할 수 있는 링크입니다. #}
                     <li class="page-item">
                         <a class="page-link" data-page="{{ page_number }}" href="javascript:void(0)">{{ page_number }}</a>
                     </li>
@@ -96,7 +95,7 @@
             {% endif %}
         {% endfor %}
 
-        {% comment %} 다음 페이지로 이동 (비활성화 상태일 경우 버튼 비활성화) {% endcomment %}
+        {# 다음 페이지 버튼, 마지막 페이지일 경우 비활성화됩니다. #}
         {% if page_obj.has_next %}
             <li class="page-item">
                 <a class="page-link" data-page="{{ page_obj.next_page_number }}" href="javascript:void(0)">다음</a>
@@ -109,65 +108,62 @@
     </ul>
 
 </div>
-<div class="row justify-content-center align-items-center">  {# 중앙 정렬을 위한 플렉스 레이아웃 #}
+
+{# 질문 등록 버튼과 검색창을 중앙 정렬합니다. #}
+<div class="row justify-content-center align-items-center">  
     {% if board_name %}
         <div class="col-2">
-            {% comment %} 질문 등록 버튼 {% endcomment %}
+            {# 질문 등록 버튼, 새로운 질문을 등록할 수 있는 링크입니다. #}
             <a href="{% url_byME 'post' 'create' %}" class="btn btn-primary">질문 등록</a>
         </div>
-        {% comment %} 검색창 (중앙 배치, 넓이 조정) {% endcomment %}
-        <div class="col-md-6">  {# 중간 크기의 화면에서 6/12 폭을 사용하는 검색창 #}
-            <div class="input-group mw-100">  {# 전체 너비를 사용하는 입력 그룹 #}
-                <input type="text" class="form-control bg-light border-0 small"  {# 검색어 입력 필드 #}
+        {# 검색창 영역, 검색어를 입력하고 질문 목록을 검색할 수 있습니다. #}
+        <div class="col-md-6">  
+            <div class="input-group mw-100">  
+                {# 검색어를 입력하는 필드 #}
+                <input type="text" class="form-control bg-light border-0 small"  
                     placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" 
-                    id="search_kw" value="{{ kw|default_if_none:'' }}">  {# 기본값으로 검색어 유지 #}
-                <div class="input-group-append">  {# 입력 필드 오른쪽에 버튼 추가 #}
-                    <button class="btn btn-primary" type="button" id="btn_search">  {# 검색 버튼 #}
-                        <i class="fas fa-search fa-sm"></i>  {# 검색 아이콘 #}
+                    id="search_kw" value="{{ kw|default_if_none:'' }}">  
+                <div class="input-group-append">  
+                    {# 검색 버튼 #}
+                    <button class="btn btn-primary" type="button" id="btn_search">  
+                        <i class="fas fa-search fa-sm"></i>  
                     </button>
                 </div>
             </div>
         </div>
     {% endif %}
 </div>
-{% comment %} 검색 폼 (숨겨진 필드) {% endcomment %}
+
+{# 검색을 위한 숨겨진 폼 #}
 <form id="searchForm" method="get" action="{% url_byME 'post' 'list' %}">
-    {% comment %} 검색어를 유지하는 숨겨진 필드 {% endcomment %}
+    {# 검색어를 서버로 전송하는 숨겨진 필드 #}
     <input type="hidden" id="kw" name="kw" value="{{ kw|default_if_none:'' }}">
 
-    {% comment %} 현재 페이지 번호를 유지하는 숨겨진 필드 {% endcomment %}
+    {# 현재 페이지 번호를 유지하는 숨겨진 필드 #}
     <input type="hidden" id="page" name="page" value="{{ page }}">
 </form>
-
-
 
 {% endblock %}
 
 {% block script %}
 <script>
-    // 페이지 이동 버튼 클릭 시 페이지 설정 및 폼 제출
+    {# 페이지 링크를 클릭하면 해당 페이지로 이동하는 기능을 구현합니다. #}
     const page_elements = document.getElementsByClassName("page-link");
 
     Array.from(page_elements).forEach(function(element) {
-
         element.addEventListener('click', function() {
-
-            document.getElementById('page').value = this.dataset.page; 
-            document.getElementById('searchForm').submit();
-            
+            document.getElementById('page').value = this.dataset.page;  // 페이지 번호 설정
+            document.getElementById('searchForm').submit();  // 폼 제출
         });
-
     });
 
-    // 검색 버튼 클릭 시 검색어 설정 및 폼 제출
+    {# 검색 버튼을 클릭하면 검색어를 설정하고, 첫 번째 페이지부터 검색 결과를 표시합니다. #}
     const btn_search = document.getElementById("btn_search");
 
     btn_search.addEventListener('click', function() {
-
-        document.getElementById('kw').value = document.getElementById('search_kw').value; 
-        document.getElementById('page').value = 1; 
-        document.getElementById('searchForm').submit(); 
-
+        document.getElementById('kw').value = document.getElementById('search_kw').value;  // 검색어 설정
+        document.getElementById('page').value = 1;  // 페이지 번호를 1로 설정
+        document.getElementById('searchForm').submit();  // 폼 제출
     });
 </script>
 {% endblock %}

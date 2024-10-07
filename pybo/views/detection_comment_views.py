@@ -17,96 +17,189 @@ board_name = URLS['BOARD_NAME']['detection']
 content_type = URLS['CONTENT_TYPE']
 end_point = URLS['CRUD_AND_MORE']
 
-# 리다이렉트 url 설정
+# 리다이렉트 URL 설정
 read_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["read"]}'
 
 
-class DCommentECMixin(BaseExtraContextMixin):
+class DetectionCommentExtraContextMixin(BaseExtraContextMixin):
     """
-    모든 뷰에서 공통적으로 사용할 context 데이터를 추가하는 Mixin
+    모든 댓글 관련 뷰에서 공통적으로 사용할 추가 데이터를 설정하는 Mixin입니다.
+
+    Methods
+    -------
+    get_context_data(**kwargs):
+        템플릿에 전달할 추가 데이터를 설정합니다.
+
+    Returns
+    -------
+    dict
+        템플릿에 전달할 추가 데이터를 포함한 컨텍스트 딕셔너리입니다.
     """
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['board_name'] = board_name
-        context['comment_form'] = DetectionCommentForm()  # 게시글 상세보기 페이지에 댓글 폼을 추가
+    def get_context_data(self, **kwargs) -> dict:
+        """
+        템플릿에 전달할 추가 데이터를 설정하는 메서드입니다.
+
+        게시판 이름과 댓글 작성 폼을 템플릿에 추가합니다.
+
+        Parameters
+        ----------
+        kwargs : dict
+            템플릿에 전달할 추가적인 키워드 인자들입니다.
+
+        Returns
+        -------
+        dict
+            추가 데이터를 포함한 템플릿 컨텍스트 딕셔너리입니다.
+        """
+        context = super().get_context_data(**kwargs)  # 부모 클래스 메서드 호출
+        context['board_name'] = board_name  # 게시판 이름 설정
+        context['comment_form'] = DetectionCommentForm()  # 댓글 작성 폼 추가
         return context
 
 
-
-class DetectionCommentCreateView(DCommentECMixin, BaseCreateView):
+class DetectionCommentCreateView(DetectionCommentExtraContextMixin, BaseCreateView):
     """
-    특정 인물 찾기 게시판의 댓글 생성 뷰.
-    """
+    특정 인물 찾기 게시판의 댓글을 작성하는 뷰입니다.
 
-    model = DetectionComment
-    form_class = DetectionCommentForm
-    success_url = read_url
+    Attributes
+    ----------
+    model : Model
+        사용할 댓글 모델(DetectionComment)입니다.
+        
+    form_class : Form
+        사용할 댓글 작성 폼 클래스입니다.
+        
+    success_url : str
+        댓글 작성 후 이동할 URL입니다.
+
+    Methods
+    -------
+    form_valid(form):
+        폼이 유효한 경우 댓글을 작성하고 저장합니다.
+    """
+    
+    model = DetectionComment  # 사용할 댓글 모델 설정
+    form_class = DetectionCommentForm  # 댓글 작성 폼 클래스 설정
+    success_url = read_url  # 댓글 작성 후 이동할 URL 설정
 
     def form_valid(self, form):
-        comment = form.instance
-        comment.post = get_object_or_404(DetectionPost, pk=self.kwargs['pk'])
+        """
+        폼이 유효할 경우 댓글을 작성하고 저장하는 메서드입니다.
 
-        response = super().form_valid(form)
-        messages.success(self.request, '댓글이 성공적으로 작성되었습니다.', extra_tags='comment')
+        작성된 댓글은 해당 게시글과 연결됩니다.
 
-        return response
+        Parameters
+        ----------
+        form : Form
+            유효성을 통과한 댓글 폼 인스턴스입니다.
+
+        Returns
+        -------
+        HttpResponseRedirect
+            작성된 댓글이 포함된 게시글 상세 페이지로 리다이렉트됩니다.
+        """
+        comment = form.instance  # 폼 인스턴스에서 댓글 객체 가져오기
+        comment.post = get_object_or_404(DetectionPost, pk=self.kwargs['pk'])  # 댓글이 달릴 게시글 찾기
+
+        response = super().form_valid(form)  # 상위 클래스의 form_valid 호출
+        messages.success(self.request, '댓글이 성공적으로 작성되었습니다.', extra_tags='comment')  # 성공 메시지 표시
+
+        return response  # 상위 클래스의 결과 반환
 
 
 class DetectionCommentUpdateView(BaseUpdateView):
     """
-    특정 인물 찾기 게시판의 댓글 수정 뷰.
-    """
+    특정 인물 찾기 게시판의 댓글을 수정하는 뷰입니다.
 
-    model = DetectionComment
-    form_class = DetectionCommentForm
-    template_name = 'pybo/answer_form.html'
-    success_url = read_url
+    Attributes
+    ----------
+    model : Model
+        사용할 댓글 모델(DetectionComment)입니다.
+        
+    form_class : Form
+        사용할 댓글 수정 폼 클래스입니다.
+        
+    template_name : str
+        사용할 템플릿 파일 경로입니다.
+        
+    success_url : str
+        댓글 수정 후 이동할 URL입니다.
+    """
+    
+    model = DetectionComment  # 사용할 댓글 모델 설정
+    form_class = DetectionCommentForm  # 댓글 수정 폼 클래스 설정
+    template_name = 'pybo/answer_form.html'  # 사용할 템플릿 파일 경로 설정
+    success_url = read_url  # 댓글 수정 후 이동할 URL 설정
 
 
 class DetectionCommentDeleteView(BaseDeleteView):
     """
-    특정 인물 찾기 게시판의 댓글 삭제 뷰.
-    """
+    특정 인물 찾기 게시판의 댓글을 삭제하는 뷰입니다.
 
-    model = DetectionComment
-    success_url = read_url  # 삭제 후 이동할 URL
+    Attributes
+    ----------
+    model : Model
+        사용할 댓글 모델(DetectionComment)입니다.
+        
+    success_url : str
+        댓글 삭제 후 이동할 URL입니다.
+    """
+    
+    model = DetectionComment  # 사용할 댓글 모델 설정
+    success_url = read_url  # 댓글 삭제 후 이동할 URL 설정
 
 
 class DetectionCommentVoteView(BaseVoteView):
     """
-    특정 인물 찾기 게시판의 댓글 추천 뷰.
+    특정 인물 찾기 게시판의 댓글 추천 기능을 제공하는 뷰입니다.
+
+    Attributes
+    ----------
+    model : Model
+        사용할 댓글 모델(DetectionComment)입니다.
+        
+    success_url : str
+        추천 후 이동할 URL입니다.
     """
+    
+    model = DetectionComment  # 사용할 댓글 모델 설정
+    success_url = read_url  # 추천 후 이동할 URL 설정
 
-    model = DetectionComment
-    success_url = read_url
 
-
-# ===============================================
-# AI 관련 백그라운드 처리 함수
-# ===============================================
 from background_task import background
 
 
-def create_initial_ai_answer2(post_id):
+def create_initial_ai_comment2(post_id: int) -> None:
     """
-    AI 처리 중임을 알리는 초기 답변을 생성하는 함수.
-    'AI' 사용자 계정이 답변 작성자로 설정되며, 백그라운드에서 AI 처리를 예약한다.
-    """
+    AI 처리 중임을 알리는 초기 답변을 생성하는 함수입니다.
 
+    AI 계정이 작성자로 설정되며, 이후 백그라운드 작업에서 AI 처리를 실행합니다.
+
+    Parameters
+    ----------
+    post_id : int
+        답변이 달릴 게시글의 ID입니다.
+
+    Returns
+    -------
+    None
+    """
+    
     from django.contrib.auth.models import User
     from ..models import DetectionPost, DetectionComment
 
-    logger.info(f"초기 답변 생성 Q: {post_id}")
+    logger.info(f"초기 AI 답변 생성 - 게시글 ID: {post_id}")
 
-    post = get_object_or_404(DetectionPost, pk=post_id)
+    post = get_object_or_404(DetectionPost, pk=post_id)  # 게시글 조회
 
     try:
-        ai_user = User.objects.get(username='AI')
+        ai_user = User.objects.get(username='AI')  # AI 사용자 계정 조회
     except User.DoesNotExist:
         logger.error("슈퍼유저 'AI'가 존재하지 않습니다.")
         return
 
+    # AI가 작성한 초기 답변 생성
     comment = DetectionComment(
         author=ai_user,
         post=post,
@@ -115,39 +208,60 @@ def create_initial_ai_answer2(post_id):
     )
     comment.save()
 
-    schedule_ai_comment_update2(
+    # AI 백그라운드 작업 예약
+    detect_president(
         comment_id=comment.id,
-        question_id=post_id,
+        post_id=post_id,
         schedule=1  # 1초 후 실행 예약
     )
 
 
 @background(schedule=1)
-def schedule_ai_comment_update2(comment_id, question_id):
+def detect_president(comment_id: int, post_id: int) -> None:
     """
-    백그라운드에서 AI 처리를 실행하고, 처리 결과를 답변으로 업데이트하는 함수.
-    """
+    백그라운드에서 AI 처리를 실행하고, 처리 결과를 댓글로 업데이트하는 함수입니다.
 
+    Parameters
+    ----------
+    comment_id : int
+        처리 결과를 업데이트할 댓글의 ID입니다.
+        
+    post_id : int
+        댓글이 달린 게시글의 ID입니다.
+
+    Returns
+    -------
+    None
+    """
+    
     from ..models import DetectionPost, DetectionComment
     from .ai import process_image2
 
-    logger.info(f"AI 처리 중 Q: {question_id}")
+    logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
-    comment = get_object_or_404(DetectionComment, pk=comment_id)
-    post = get_object_or_404(DetectionPost, pk=question_id)
+    comment = get_object_or_404(DetectionComment, pk=comment_id)  # 댓글 조회
+    post = get_object_or_404(DetectionPost, pk=post_id)  # 게시글 조회
 
     image_path = post.image1.path  # 게시글에 첨부된 이미지 경로 조회
 
     try:
+        # AI로 이미지 처리 후 결과 이미지 경로 저장
         result_image_path = process_image2(image_path)
-        comment.content = "이 사진 속 인물은 도널드 트럼프(Donald Trump)입니다. 그는 미국의 제45대 대통령으로 2017년부터 2021년까지 재임했으며, 정치인이기 이전에는 부동산 개발업자이자 TV 방송인으로도 유명했습니다. 트럼프는 2016년 대통령 선거에서 공화당 후보로 출마해 승리했으며, 재임 중에는 ‘미국 우선주의’를 내세워 보호무역, 이민 제한, 세금 감면 등의 정책을 추진했습니다."
-        comment.image1 = result_image_path
+        comment.content = (
+            "이 사진 속 인물은 도널드 트럼프(Donald Trump)입니다. "
+            "그는 미국의 제45대 대통령으로 2017년부터 2021년까지 재임했으며, "
+            "정치인이기 이전에는 부동산 개발업자이자 TV 방송인으로도 유명했습니다. "
+            "트럼프는 2016년 대통령 선거에서 공화당 후보로 출마해 승리했으며, "
+            "재임 중에는 ‘미국 우선주의’를 내세워 보호무역, 이민 제한, 세금 감면 등의 정책을 추진했습니다."
+        )
+        comment.image1 = result_image_path  # 처리된 이미지 경로 저장
         comment.save()
 
-        logger.info(f"AI 처리 완료 A: {comment.id}")
+        logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
 
     except Exception as e:
-        logger.exception(f"AI 처리 실패 Q: {question_id}")
+        # AI 처리 실패 시 예외 처리
+        logger.exception(f"AI 처리 실패 - 게시글 ID: {post_id}")
         comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
-        comment.modify_date = timezone.now()
+        comment.modify_date = timezone.now()  # 댓글 수정 날짜 갱신
         comment.save()

@@ -44,7 +44,7 @@ class BaseExtraContextMixin:
     Parameters
     ----------
     kwargs : dict
-        템플릿에 전달할 추가적인 키워드 인자들입니다.
+        템플릿에 전달할 추가적인 키워드 인자들(템플릿에서 변수로 사용할 수 있는 모든 데이터)입니다.
 
     Returns
     -------
@@ -61,7 +61,7 @@ class BaseExtraContextMixin:
         Parameters
         ----------
         kwargs : dict
-            템플릿에 전달할 추가적인 키워드 인자입니다.
+            템플릿에 전달할 추가적인 키워드 인자(템플릿에서 변수로 사용할 수 있는 모든 데이터)입니다.
 
         Returns
         -------
@@ -119,7 +119,7 @@ class BaseListView(ListView):
     get_context_data(**kwargs):
         템플릿에 추가적인 데이터를 전달합니다. 예를 들어, 페이지 번호와 검색어를 설정합니다.
     """
-    paginate_by = 20  # 한 페이지에 보여줄 게시글 수
+    paginate_by = 10  # 한 페이지에 보여줄 게시글 수
     template_name = ''  # 사용할 템플릿 (하위 클래스에서 설정 필요)
     search_fields = []  # 검색 필드 (하위 클래스에서 설정 필요)
 
@@ -231,7 +231,7 @@ class BaseFormMixin(LoginRequiredMixin, BaseExtraContextMixin):
         Parameters
         ----------
         kwargs : dict
-            템플릿에 전달할 추가적인 키워드 인자입니다.
+            템플릿에 전달할 추가적인 키워드 인자(템플릿에서 변수로 사용할 수 있는 모든 데이터)입니다.
 
         Returns
         -------
@@ -387,7 +387,7 @@ class BaseReadView(DetailView):
         Parameters
         ----------
         kwargs : dict
-            템플릿에 전달할 추가적인 키워드 인자입니다.
+            템플릿에 전달할 추가적인 키워드 인자(템플릿에서 변수로 사용할 수 있는 모든 데이터)입니다.
 
         Returns
         -------
@@ -408,7 +408,9 @@ class BaseReadView(DetailView):
 
     def _process_comments(self, comments) -> list:
         """
-        _process_comments 메서드는 각 댓글에 대해 작성자 여부 및 AI 처리 여부를 추가하고, 메시지를 연결합니다.
+        _process_comments 메서드는 각 댓글에 대해 작성자 여부 및 AI 처리 여부를 추가하고, 
+        
+        메시지(django.messages)를 연결합니다.
 
         Parameters
         ----------
@@ -516,6 +518,10 @@ class BaseUpdateView(BaseFormMixin, UpdateView):
             extra_tags = f'comment {obj.pk}'  # 댓글이면 'comment {id}' 형식으로 태그 설정
         else:
             extra_tags = f'post'
+        
+        # 이미지 부분이 수정되었다면 
+        if 'image1' in self.request.FILES or 'image2' in self.request.FILES:
+            messages.success(self.request, '수정시에는 AI 기능을 제공하지 않습니다.', extra_tags=extra_tags)
             
         messages.success(self.request, '성공적으로 수정되었습니다.', extra_tags=extra_tags)
 
@@ -652,3 +658,4 @@ class BaseVoteView(LoginRequiredMixin, RedirectView):
         if hasattr(obj, 'post'):
             return f"{reverse(self.success_url, kwargs={'pk': obj.post.pk})}#comment-{obj.pk}"
         return reverse(self.success_url, kwargs={'pk': obj.pk})
+

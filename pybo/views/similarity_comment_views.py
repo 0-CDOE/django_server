@@ -219,7 +219,6 @@ def create_initial_ai_comment(post_id: int) -> None:
         schedule=1  # 1초 후 실행 예약
     )
 
-
 @background(schedule=1)
 def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     """
@@ -267,9 +266,16 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
 
         logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
 
+    except ValueError as e:
+        # 얼굴이 1개가 아니라던가 유사도 계산 중 문제가 발생했을 경우 처리
+        logger.exception(f"얼굴 유사도 비교 실패 - 게시글 ID: {post_id}")
+        comment.content = str(e)  # 예외 메시지를 댓글 내용에 저장
+        comment.modify_date = timezone.now()  # 수정 날짜 업데이트
+        comment.save()
+        
     except Exception as e:
         # AI 처리 실패 시 예외 처리
         logger.exception(f"AI 처리 실패 - 게시글 ID: {post_id}")
-        comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
-        comment.modify_date = timezone.now()
+        comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."  # 오류 메시지 저장
+        comment.modify_date = timezone.now()  # 수정 날짜 업데이트
         comment.save()

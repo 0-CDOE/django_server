@@ -1,15 +1,14 @@
 {% load custom_tags %}
 
-{% comment %} 푸터 {% endcomment %}
-<!-- 푸터 영역 -->
-<footer class="sticky-footer bg-white">  {# 고정된 푸터, 흰 배경 #}
-    <div class="container my-auto">  {# 컨테이너로 푸터 내용 감싸기 #}
-        <div class="row justify-content-center align-items-center">  {# 중앙 정렬을 위한 플렉스 레이아웃 #}
+{% comment %} 푸터 시작 {% endcomment %}
+<footer class="sticky-footer bg-white">  {# 화면 하단에 고정된 푸터, 흰 배경 설정 #}
+    <div class="container my-auto">  {# 푸터 내용을 감싸는 컨테이너, 가운데 정렬을 위한 여백 설정 #}
+        <div class="row justify-content-center align-items-center">  {# 플렉스 레이아웃을 사용하여 중앙 정렬 및 수직 정렬 #}
 
-            {% comment %} 푸터 텍스트 (중앙 배치) {% endcomment %}
-            <div class="col-md-12 text-center mt-3">  {# 전체 폭을 사용하는 중앙 정렬된 텍스트 #}
-                <div class="copyright text-center my-auto">  {# 저작권 정보 #}
-                    <span>Copyright &copy; 0!Code Website 2024</span>  {# 저작권 텍스트 #}
+            {% comment %} 푸터 텍스트: 중앙 배치된 저작권 정보 {% endcomment %}
+            <div class="col-md-12 text-center mt-3">  {# 푸터 텍스트를 중앙에 배치하고, 전체 폭을 사용하는 컬럼 설정 #}
+                <div class="copyright text-center my-auto">  {# 저작권 정보가 들어갈 영역, 자동 여백 설정 #}
+                    <span>Copyright &copy; 0!Code Website 2024</span>  {# 실제 저작권 텍스트 표시 #}
                 </div>
             </div>
             

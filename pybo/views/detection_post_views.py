@@ -1,7 +1,7 @@
 from .base_views import BaseListView, BaseReadView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
 from ..models import DetectionPost
 from ..forms import DetectionPostForm, DetectionCommentForm
-from .detection_comment_views import create_initial_ai_answer2
+from .detection_comment_views import create_initial_ai_comment2
 
 from ..url_patterns import URLS
 
@@ -143,12 +143,13 @@ class DetectionPostCreateView(DetectionPostExtraContextMixin, BaseCreateView):
 
         post = form.instance  # 저장된 게시글 인스턴스 가져오기
         
-        logger.info(f"AI 처리 시작 - 게시글 ID: {post.id}")
-        try:
-            create_initial_ai_answer2(post_id=post.id)  # AI 처리 시작
-            logger.info(f"AI 처리 완료 - 게시글 ID: {post.id}")
-        except Exception as e:
-            logger.error(f"AI 처리 실패 - 게시글 ID: {post.id}, 에러: {str(e)}")
+        if post.image1:  # 이미지가 있는 경우에만 AI 처리
+            logger.info(f"AI 처리 시작 - 게시글 ID: {post.id}")
+            try:
+                create_initial_ai_comment2(post_id=post.id)  # AI 처리 시작
+                logger.info(f"AI 처리 완료 - 게시글 ID: {post.id}")
+            except Exception as e:
+                logger.error(f"AI 처리 실패 - 게시글 ID: {post.id}, 에러: {str(e)}")
 
         return response  # form_valid의 결과 반환
 

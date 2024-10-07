@@ -1,3 +1,5 @@
+from django.contrib import messages
+
 from .base_views import BaseListView, BaseReadView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
 from ..models import SimilarityPost
 from ..forms import SimilarityPostForm, SimilarityCommentForm
@@ -47,7 +49,7 @@ class SimilarityPostExtraContextMixin(BaseExtraContextMixin):
         Parameters
         ----------
         **kwargs : dict
-            템플릿에 전달할 추가적인 인자들입니다.
+            템플릿에 전달할 추가적인 인자들(템플릿에서 변수로 사용할 수 있는 모든 데이터)입니다.
 
         Returns
         -------
@@ -107,7 +109,7 @@ class SimilarityPostCreateView(SimilarityPostExtraContextMixin, BaseCreateView):
     success_url = read_url  # 성공 후 리다이렉트할 URL
     template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
 
-    def form_valid(self, form) -> 'HttpResponseRedirect':
+    def form_valid(self, form):
         """
         폼이 유효한 경우 AI 처리 로직을 실행하고 게시글을 저장합니다.
 
@@ -128,11 +130,14 @@ class SimilarityPostCreateView(SimilarityPostExtraContextMixin, BaseCreateView):
         post = form.instance  # 저장된 게시글 인스턴스 가져오기
         logger.info(f"AI 처리 시작 - 질문: {post}")
 
-        try:
-            create_initial_ai_comment(post_id=post.id)
-            logger.info(f"AI 처리 완료 - 질문 ID: {post}")
-        except Exception as e:
-            logger.error(f"AI 처리 실패 - 질문 ID: {post}, 에러: {str(e)}")
+        if post.image1 and post.image2:  # 이미지가 있는 경우에만 AI 처리
+            try:
+                create_initial_ai_comment(post_id=post.id)
+                logger.info(f"AI 처리 완료 - 질문 ID: {post}")
+            except Exception as e:
+                logger.error(f"AI 처리 실패 - 질문 ID: {post}, 에러: {str(e)}")
+        else:
+            messages.error(self.request, '이미지 2장 첨부해주세요.', extra_tags='post')
 
         return response  # 부모 클래스의 form_valid 메서드 결과 반환
 
@@ -157,7 +162,7 @@ class SimilarityPostReadView(SimilarityPostExtraContextMixin, BaseReadView):
 class SimilarityPostUpdateView(SimilarityPostExtraContextMixin, BaseUpdateView):
     """
     유사도 게시판의 게시글을 수정하는 뷰입니다.
-    게시글 수정 후 AI 처리는 구현되지 않았습니다.
+    게시글 수정 후 AI 처리는 구현하지 않았습니다.
 
     Attributes
     ----------
