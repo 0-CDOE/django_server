@@ -1,100 +1,173 @@
 {% load custom_filters %}
 {% load custom_tags %}
 
-{% block title %}{{ object.subject }}{% endblock %}
-
-
-{# 답변 개수 출력 #}
 <h5 class="border-bottom my-3 py-2">
-    {{ object.comments.count }}개의 답변이 있습니다.
+    {{ post.comments.count }}개의 답변이 있습니다.
 </h5>
 
+{# 댓글 리스트 #}
 {% for comment in processed_comments %}
-    <div class="card my-3">
-        <div class="card-body">
-            <div class="card-text">
-                {% if comment.is_ai_processing %}
-                    <div class="d-flex align-items-center">
-                        <div class="spinner-border text-primary" style="margin-right: 10px;" role="status">
-                            <span class="visually-hidden"></span>
-                        </div>
-                        <span id="comment-content-{{ comment.id }}">{{ comment.content|md_to_html }}</span>
-                    </div>
-                {% else %}
-                    <span id="comment-content-{{ comment.id }}">{{ comment.content|md_to_html }}</span>
-                {% endif %}
-            </div>
+    <div id="comment-{{ comment.id }}">
 
-            <div class="my-3 d-flex justify-content-between">
-                <div>
-                    <a href="javascript:void(0)" 
-                       data-uri="{% url 'pybo:similarity_comment_vote' comment.id %}" 
-                       class="recommend btn btn-sm btn-success me-2 {% if comment.is_author %} disabled {% endif %}"
-                       {% if comment.is_author %} aria-disabled="true" {% endif %}>
-                       추천 <span class="badge bg-light text-success">{{ comment.voter_count }}</span>
-                    </a>
+        {# 특정 댓글에만 메시지 표시 #}
+        {% if comment.messages %}
+            {% for message in comment.messages %}
+                <div class="alert alert-danger my-3" role="alert">
+                    <ul>
+                        <li>{{ message.text }}</li>
+                    </ul>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="card my-3">
+            <div class="card-body">
+                <div id="comment-content-{{ comment.id }}">
+
+                    {# 댓글 내용 표시 #}
+                    <div class="comment-content mb-3">
+
+                        {% if comment.is_ai_processing %}
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border text-primary" style="margin-right: 10px;" role="status">
+                                <span class="visually-hidden"></span>
+                            </div>
+                            {{ comment.content|md_to_html }}
+                        </div>
+                        {% else %}
+                        {{ comment.content|md_to_html }}
+                        {% endif %}
+                        
+
+                        {# 이미지가 있을 경우 표시 #}
+                        {% if comment.image1 %}
+                            <div class="mt-3">
+                                <p>업로드된 이미지:</p>
+                                <img src="{{ comment.image1 }}" alt="Uploaded Image" style="max-width: 300px; height: auto;">
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {# 유저 정보가 오른쪽 정렬되도록 설정 #}
+                    <div class="comment-meta d-flex justify-content-end mt-4">
+                        <div class="text-end">
+                            <div class="badge bg-light text-dark p-2 text-start">
+                                <div class="mb-2">
+                                    user name: {{ comment.author_username }}
+                                </div>
+                                <hr class="my-2">
+                                <div class="mb-2">
+                                    created at: {{ comment.create_date }}
+                                </div>
+                                {% if comment.modify_date %}
+                                    <hr class="my-2">
+                                    <div class="mb-2">
+                                        modified at: {{ comment.modify_date }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    {% if comment.is_author %}
-                        <div class="d-flex justify-content-end">
-                            <a href="{% url_byME 'comment' 'delete' comment_id=comment.id %}" 
-                               class="btn btn-sm btn-warning me-2 comment-update">
-                               <i class="fas fa-edit"></i> 수정
-                            </a>
-                            <a href="javascript:void(0)" 
-                               class="delete btn btn-sm btn-danger" 
-                               data-uri="{% url_byME 'comment' 'delete' comment.id %}">
-                               <i class="fas fa-trash-alt"></i> 삭제
-                            </a>
+                {# 수정 폼 (처음에는 숨김 상태로 시작) #}
+                <div class="edit-form-container" id="edit-form-{{ comment.id }}" style="display: none;">
+                    <form method="post" action="{% url_byME 'comment' 'update' comment_id=comment.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="edit-content-{{ comment.id }}" class="form-label">답변 수정</label>
+                            <textarea name="content" id="edit-content-{{ comment.id }}" class="form-control">{{ comment.content }}</textarea>
                         </div>
-                    {% endif %}
+                        <button type="submit" class="btn btn-primary">수정 완료</button>
+                        <button type="button" class="btn btn-secondary cancel-edit" data-comment-id="{{ comment.id }}">취소</button>
+                    </form>
+                </div>
+
+                <div class="my-3 d-flex justify-content-between">
+                    <div>
+                        <a href="{% url_byME 'comment' 'vote' comment_id=comment.id %}#comment-{{ comment.id }}" 
+                           class="recommend btn btn-sm btn-success me-2 {% if comment.is_author %} disabled {% endif %}"
+                           {% if comment.is_author %} aria-disabled="true" {% endif %}>
+                           추천 <span class="badge bg-light text-success">{{ comment.voter_count }}</span>
+                        </a>
+                    </div>
+
+                    <div>
+                        {% if comment.is_author %}
+                            <div class="d-flex justify-content-end">
+                                <a href="javascript:void(0)" 
+                                   class="btn btn-sm btn-warning me-2 comment-update" 
+                                   data-comment-id="{{ comment.id }}">
+                                   <i class="fas fa-edit"></i> 수정
+                                </a>
+                                <a href="javascript:void(0)" 
+                                   class="delete btn btn-sm btn-danger" 
+                                   data-uri="{% url_byME 'comment' 'delete' comment_id=comment.id %}">
+                                   <i class="fas fa-trash-alt"></i> 삭제
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 {% endfor %}
 
-
 {# 답변 작성 폼 #}
-<form method="post" enctype="multipart/form-data" class="my-3" action="{% url_byME 'comment' 'create' object.id %}">
+<form method="post" enctype="multipart/form-data" class="my-3" action="{% url_byME 'comment' 'create' post.id %}">
     {% csrf_token %}
-
+    
     {# 답변 내용 입력 폼 #}
     <div class="mb-3">
-        <label for="id_content" class="form-label">답변 내용</label>
-        {{ form.content|add_class:"form-control" }}
-        {% if form.content.errors %}
+        <label for="id_content" class="form-label">댓글 내용</label>
+        {{ comment_form.content|add_class:"form-control" }}
+        
+        {# 오류 메시지 #}
+        {% if comment_form.content.errors %}
             <div class="invalid-feedback">
-                {{ form.content.errors }}
+                {{ comment_form.content.errors }}
             </div>
         {% endif %}
     </div>
-    
-    {# 이미지 업로드 폼 #}
-    <div class="mb-3">
-        <label for="image1" class="form-label">이미지1</label>
-        {{ form.image1|add_class:"form-control" }}
-        {% if form.image1.errors %}
-            <div class="invalid-feedback">
-                {{ form.image1.errors }}
-            </div>
-        {% endif %}
-        <label for="image2" class="form-label">이미지2</label>
-        {{ form.image2|add_class:"form-control" }}
-        {% if form.image2.errors %}
-            <div class="invalid-feedback">
-                {{ form.image2.errors }}
-            </div>
-        {% endif %}
-    </div>
-    
-    <button type="submit" class="btn btn-primary">답변 등록</button>
+
+    <button type="submit" class="btn btn-primary">댓글 등록</button>
 </form>
 
-{# 자바스크립트 코드 블록 #}
 {% block script %}
-<script>
-    {# 스크립트 블록은 나중에 필요한 자바스크립트 코드를 여기에 추가하는 데 사용될 수 있음 #}
-</script>
+    <script>
+        function toggleEditForm(commentId, showForm) {
+            var contentDiv = document.getElementById('comment-content-' + commentId);
+            var editFormDiv = document.getElementById('edit-form-' + commentId);
+            var textarea = document.getElementById('edit-content-' + commentId);
+
+            if (showForm) {
+                contentDiv.style.display = 'none';
+                editFormDiv.style.display = 'block';
+                // 댓글 내용에 맞춰 textarea의 높이를 조정
+                textarea.style.height = textarea.scrollHeight + 'px';
+            } else {
+                contentDiv.style.display = 'block';
+                editFormDiv.style.display = 'none';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function () {
+            // 수정 버튼 이벤트 리스너
+            document.querySelectorAll('.comment-update').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var commentId = this.dataset.commentId;
+                    toggleEditForm(commentId, true);
+                });
+            });
+        
+            // 취소 버튼 이벤트 리스너
+            document.querySelectorAll('.cancel-edit').forEach(function (button) {
+                button.addEventListener('click', function () {
+                    var commentId = this.dataset.commentId;
+                    toggleEditForm(commentId, false);
+                });
+            });
+        });
+    </script>
 {% endblock %}

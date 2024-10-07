@@ -4,9 +4,17 @@
 
 {% block content %}
 {% load custom_tags %} 
-{% comment %} 네비게이션 바 (상단바) 포함: 외부 파일에서 가져오기 {% endcomment %}
-{% include "topbar.html" %}
 
+    {% comment %} 알림 메시지 표시 {% endcomment %}
+    {% if messages %}
+    
+        {% for message in messages %}
+        <div class="alert alert-danger my-3" role="alert">
+            <ul><li>{{ message.message }}</li></ul>
+            </div>
+            {% endfor %}
+        
+    {% endif %}
 <div class="container my-3">  {# 질문 목록을 담는 컨테이너 #}
 
     {% comment %} 질문 목록 테이블 {% endcomment %}
@@ -23,8 +31,8 @@
 
         <tbody>
             {% comment %} 질문 목록이 있을 경우 {% endcomment %}
-            {% if object_indices %}
-                {% for index, post in object_indices %}
+            {% if post_indices %}
+                {% for index, post in post_indices %}
                     <tr class="text-center">
                         {% comment %} 질문 번호 출력 (전체 목록 기준) {% endcomment %}
                         <td>{{ index }}</td>
@@ -39,8 +47,8 @@
                         {% comment %} 질문 제목 및 답변 개수 표시 {% endcomment %}
                         <td class="text-start">
                             <a href="{% url_byME 'post' 'read' post.id %}">{{ post.subject }}</a>  {# 질문 제목 링크 #}
-                            {% if post.answers.count > 0 %}
-                                <span class="text-danger small mx-2">{{ post.answers.count }}</span>  {# 답변 개수 표시 #}
+                            {% if post.comments.count > 0 %}
+                                <span class="text-danger small mx-2">{{ post.comments.count }}</span>  {# 답변 개수 표시 #}
                             {% endif %}
                         </td>
 
@@ -101,7 +109,27 @@
     </ul>
 
 </div>
-
+<div class="row justify-content-center align-items-center">  {# 중앙 정렬을 위한 플렉스 레이아웃 #}
+    {% if board_name %}
+        <div class="col-2">
+            {% comment %} 질문 등록 버튼 {% endcomment %}
+            <a href="{% url_byME 'post' 'create' %}" class="btn btn-primary">질문 등록</a>
+        </div>
+        {% comment %} 검색창 (중앙 배치, 넓이 조정) {% endcomment %}
+        <div class="col-md-6">  {# 중간 크기의 화면에서 6/12 폭을 사용하는 검색창 #}
+            <div class="input-group mw-100">  {# 전체 너비를 사용하는 입력 그룹 #}
+                <input type="text" class="form-control bg-light border-0 small"  {# 검색어 입력 필드 #}
+                    placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" 
+                    id="search_kw" value="{{ kw|default_if_none:'' }}">  {# 기본값으로 검색어 유지 #}
+                <div class="input-group-append">  {# 입력 필드 오른쪽에 버튼 추가 #}
+                    <button class="btn btn-primary" type="button" id="btn_search">  {# 검색 버튼 #}
+                        <i class="fas fa-search fa-sm"></i>  {# 검색 아이콘 #}
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
 {% comment %} 검색 폼 (숨겨진 필드) {% endcomment %}
 <form id="searchForm" method="get" action="{% url_byME 'post' 'list' %}">
     {% comment %} 검색어를 유지하는 숨겨진 필드 {% endcomment %}
@@ -111,8 +139,7 @@
     <input type="hidden" id="page" name="page" value="{{ page }}">
 </form>
 
-{% comment %} 푸터: 외부 파일에서 포함 {% endcomment %}
-{% include "footer.html" %}
+
 
 {% endblock %}
 

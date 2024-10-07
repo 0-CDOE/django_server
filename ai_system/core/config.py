@@ -26,7 +26,8 @@ class BaseConfig:
     # 클래스 변수로 기본 설정을 정의합니다.
     base_dir = os.path.join(Path(__file__).resolve().parent.parent, 'ai_files')
     dlib = os.path.join(base_dir, 'ai_models', 'DlibCNN', 'mmod_human_face_detector.dat')
-    yolo = os.path.join(base_dir, 'ai_models', 'YOLOv8', 'yolov8n-face.pt')
+    yolo_path = 'yolov8_n_face.pt'
+    yolo = os.path.join(base_dir, 'ai_models','YOLOv8')
     fairface = os.path.join(base_dir, 'ai_models', 'FairFace', 'resnet34_fair_face_4.pt')
     image_folder = os.path.join(base_dir, 'image_test', 'test_park_mind_problem')
     pickle_path = os.path.join(base_dir, 'embeddings', 'FaceRecognition(ResNet34).pkl')
@@ -37,7 +38,7 @@ class BaseConfig:
     def get_config(cls):
         return {
             "dlib": cls.dlib,
-            "yolo": cls.yolo,
+            "yolo": os.path.join(cls.yolo, cls.yolo_path),
             "fairface": cls.fairface,
             "image_folder": cls.image_folder,
             "pickle_path": cls.pickle_path,
@@ -74,7 +75,7 @@ class Data:
         image = cv2.imread(self.image_path)
         if image is None:
             # 이미지 로드 실패 시 예외 발생
-            raise ValueError(f"이미지를 로드할 수미 없습니다: {self.image_path}")
+            raise ValueError(f"이미지를 로드할 수 없습니다: {self.image_path}")
         
         # BGR 이미지를 RGB로 변환
         self.image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -86,3 +87,5 @@ class Data:
         self.left = None
         self.is_target_list = []
         self.output_image_path = None
+        self.image_rgb
+

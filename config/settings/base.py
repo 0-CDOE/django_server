@@ -201,12 +201,12 @@ LOGGING = {
         'file': {
             'level': 'INFO', # INFO 레벨 이상의 로그를 기록
             'filters': ['require_debug_false'], # DEBUG=False 일 때만 로그를 기록
-            #class - 파일 핸들러로 RotatingFileHandler 사용, 
+            # class - 파일 핸들러로 RotatingFileHandler 사용, 
             # RotatingFileHandler는 파일 크기가 설정한 크기보다 커지면 파일 뒤에 인덱스를 붙여서 백업한다. 
             # 이 핸들러의 장점은 로그가 무한히 증가되더라도 일정 개수의 파일로 롤링(Rolling)되기 때문에 
             # 로그 파일이 너무 커져서 디스크가 꽉 차는 위험을 방지할 수 있다.
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs/mysite.log', # 로그 파일명은 logs 디렉터리에 mysite.log로 설정
+            'filename': BASE_DIR / 'logs/pybo.log', # 로그 파일명은 logs 디렉터리에 mysite.log로 설정
             'maxBytes': 1024*1024*5,  # 로그 파일의 최대 크기는 5MB로 설정
             'backupCount': 5, # 로그 파일의 개수는 5개로 설정
             'formatter': 'standard', # 로그 포맷은 standard로 설정

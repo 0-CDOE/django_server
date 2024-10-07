@@ -1,9 +1,9 @@
 # ai_system/core/steps.py
 
-from ..models.FaceEncoder import FaceEncoder
 from ..models.FaceDetector import FaceDetector
-from ..models.TargetFaceMatcher import TargetFaceMatcher
 from ..models.FacePredictor import FacePredictor
+from ..models.FaceEncoder import FaceEncoder
+from ..models.FaceMatcher import TargetFaceMatcher
 
 from ..annotation.InfoWriter import InfoWriter
 from ..annotation.FaceInfoCounter import FaceInfoCounter
@@ -20,5 +20,5 @@ __all__ = [
     "ImageResizer",
     "TargetFaceMatcher",
     "FacePredictor",
-    "Saver"
+    "Saver",
 ]

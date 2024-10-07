@@ -14,7 +14,7 @@ logger = logging.getLogger('pybo')  # pybo 로깅 설정
 # 필요한 폼과 모델 임포트
 from ..forms import QuestionForm, AnswerForm # Form class 임포트
 from ..models import Question  # Question 모델 임포트
-from .answer_views import create_initial_ai_answer  # AI 처리 함수 임포트
+from .answer_views_backup import create_initial_ai_answer  # AI 처리 함수 임포트
 
 from ..url_patterns import URLS
 

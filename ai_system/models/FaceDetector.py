@@ -94,7 +94,7 @@ class YOLO(FaceDetectModel):
         if self.detector is None:
             logging.error("FaceDetector : YOLO 모델이 로드되지 않았습니다.")
             return []
-        results = self.detector.predict(image_path, conf=0.35, imgsz=1280, max_det=1000)
+        results = self.detector.predict(image_path, conf=0.35, imgsz=640, max_det=1000)
         faces = [
             (
                 int(box.xyxy[0][0]),

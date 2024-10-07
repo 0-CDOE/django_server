@@ -70,8 +70,8 @@ class SimilarityPost(AbstractPost):
         image1 (ImageField): 질문에 첨부된 첫 번째 이미지.
         image2 (ImageField): 질문에 첨부된 두 번째 이미지.
     """
-    image1 = models.ImageField(upload_to='pybo/q_image1/', null=True, blank=True, verbose_name='q_image1')
-    image2 = models.ImageField(upload_to='pybo/q_image2/', null=True, blank=True, verbose_name='q_image2')
+    image1 = models.ImageField(upload_to='similarity/q_image1/', null=True, blank=True, verbose_name='q_image1')
+    image2 = models.ImageField(upload_to='similarity/q_image2/', null=True, blank=True, verbose_name='q_image2')
 
     def __str__(self):
         return f"질문: {self.subject}"
@@ -90,8 +90,8 @@ class SimilarityComment(AbstractComment):
         image2 (ImageField): 댓글에 첨부된 두 번째 이미지.
     """
     post = models.ForeignKey(SimilarityPost, on_delete=models.CASCADE, related_name='comments')
-    image1 = models.ImageField(upload_to='pybo/a_image1/', null=True, blank=True, verbose_name='a_image1')
-    image2 = models.ImageField(upload_to='pybo/a_image2/', null=True, blank=True, verbose_name='a_image2')
+    image1 = models.ImageField(upload_to='similarity/a_image1/', null=True, blank=True, verbose_name='a_image1')
+    image2 = models.ImageField(upload_to='similarity/a_image2/', null=True, blank=True, verbose_name='a_image2')
 
     def __str__(self):
         return f"댓글: {self.content[:20]}"
@@ -124,7 +124,7 @@ class DetectionComment(AbstractComment):
         detection (ForeignKey): 해당 댓글이 달린 질문.
         image1 (ImageField): 댓글에 첨부된 첫 번째 이미지.
     """
-    detection = models.ForeignKey(DetectionPost, on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(DetectionPost, on_delete=models.CASCADE, related_name='comments')
     image1 = models.ImageField(upload_to='detection/a_image1/', null=True, blank=True, verbose_name='a_image1')
 
     def __str__(self):

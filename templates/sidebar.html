@@ -1,10 +1,11 @@
 {% load custom_tags %}
+{% load custom_filters %}
 
 {% comment %} 사이드바 (왼쪽 네비게이션 바) {% endcomment %}
 <ul class="col-md-2 navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
     {% comment %} 사이드바 로고 및 홈 링크 {% endcomment %}
-    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'common:index' %}">
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'pybo:index' %}">
         <div class="sidebar-brand-icon rotate-n-15">  {# 로고 아이콘, 약간 회전된 디자인 #}
             <i class="fas fa-laugh-wink"></i>
         </div>
@@ -31,11 +32,15 @@
         </a>
         <div id="collapseUtilities" class="collapse" aria-labelledby="headingUtilities"
             data-parent="#accordionSidebar">  {# Collapse 된 메뉴 내용 #}
-            <div class="bg-white py-2 collapse-inner rounded">  {# Collapse 내의 항목들 스타일 설정 #}
-                <h6 class="collapse-header">목록:</h6>  {# Collapse 헤더 #}
-                <a class="collapse-item" href="{% url_byME 'post' 'list' %}">얼굴 유사도 비교</a>  {# 게시판 항목 1 #}
-                <a class="collapse-item" href="#">대통령을 ㅋㅋㅋ찾아라!</a>  {# 게시판 항목 2 #}
+            <div class="bg-white py-2 collapse-inner rounded">
+                <h6 class="collapse-header">목록:</h6>
+                {% for board_url, board_name in board_urls|zip_lists:board_names_for_user %}
+                    <a class="collapse-item" href="{% url board_url %}">
+                        {{ board_name }}
+                    </a>
+                {% endfor %} {# for 문안의 변수는 지역 변수의 개념 #} 
             </div>
+            
         </div>
     </li>
 

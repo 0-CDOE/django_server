@@ -1,16 +1,14 @@
-{% extends 'base.html' %}  {# 기본 템플릿 확장 #}
+{% extends 'base.html' %}
 
 {% block content %}
-
 <div class="container">
-    {# 질문 폼 설정: create 및 update에서 공통 사용 #}
     <form id="questionForm" method="post" class="post-form my-3" enctype="multipart/form-data">
-        {% csrf_token %}  {# CSRF 보호를 위한 토큰 #}
-        {% include "form_errors.html" %}  {# 폼 오류 메시지 포함 #}
+        {% csrf_token %}
+        {% include "form_errors.html" %}
 
-        {# 제목 입력 필드 #}
-        <div class="mb-3">
-            <label for="id_subject" class="form-label">{{ form.subject.label }}</label>
+        {# 제목 입력 폼 #}
+        <div class="form-group">
+            <label for="id_subject">{{ form.subject.label }}</label>
             <input type="text" name="subject" id="id_subject" class="form-control"
                    value="{{ form.subject.value|default:'' }}" placeholder="제목을 입력하세요">
             {% for error in form.subject.errors %}
@@ -18,44 +16,62 @@
             {% endfor %}
         </div>
 
-        {# 내용 입력 필드 #}
-        <div class="mb-3">
-            <label for="id_content" class="form-label">{{ form.content.label }}</label>
+        {# 내용 입력 폼 #}
+        <div class="form-group">
+            <label for="id_content">{{ form.content.label }}</label>
             <textarea name="content" id="id_content" class="form-control" placeholder="내용을 입력하세요">{{ form.content.value|default:'' }}</textarea>
             {% for error in form.content.errors %}
                 <div class="text-danger">{{ error }}</div>
             {% endfor %}
         </div>
 
-        {# 이미지1 업로드 (Drag and Drop 기능 추가) #}
-        <div class="mb-3">
-            <label for="id_image1" class="form-label">{{ form.image1.label }}</label>
-            <div id="drop_area_image1" class="drag-drop-area" ondrop="dropHandler(event, 'id_image1', 'preview_image1')" ondragover="dragOverHandler(event)">
-                <p>이미지1 파일을 여기에 드래그 앤 드롭 하거나 클릭하세요.</p>
-                <input type="file" name="image1" id="id_image1" class="form-control" onchange="previewUploadedFile('id_image1', 'preview_image1')">
+        {# 이미지 업로드 필드를 가로로 나열 #}
+        <div class="form-row d-flex justify-content-between">
+            {# 이미지 업로드 필드 처리 (이미지1) #}
+            {% if form.image1 %}
+            <div class="form-group" style="flex-basis: 48%;">
+                <label for="id_image1">{{ form.image1.label }}</label>
+                <div id="drop_area_image1" class="border border-primary p-4 text-center" 
+                     ondrop="handleDrop(event, 'id_image1', 'preview_image1', 'dropText1')" 
+                     ondragover="handleDragOver(event)" style="cursor: pointer;">
+                    <p id="dropText1" class="text-primary">Drag and Drop Image 1 Here or Click to Upload</p>
+                    <img id="preview_image1" src="{{ initial_image1_url }}" alt="이미지1 미리보기" 
+                         class="img-preview mt-3" 
+                         style="display: {% if initial_image1_url %}block{% else %}none{% endif %};">
+                </div>
+                <input type="file" name="image1" id="id_image1" class="form-control-file mt-2 d-none" 
+                       onchange="previewFile('id_image1', 'preview_image1', 'dropText1')">
+                {% for error in form.image1.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
-            <img id="preview_image1" src="{{ initial_image1_url }}" alt="이미지1 미리보기" style="max-width: 300px; max-height: 300px; display: {% if initial_image1_url %}block{% else %}none{% endif %};">
-            {% for error in form.image1.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
-        </div>
+            {% endif %}
 
-        {# 이미지2 업로드 (Drag and Drop 기능 추가) #}
-        <div class="mb-3">
-            <label for="id_image2" class="form-label">{{ form.image2.label }}</label>
-            <div id="drop_area_image2" class="drag-drop-area" ondrop="dropHandler(event, 'id_image2', 'preview_image2')" ondragover="dragOverHandler(event)">
-                <p>이미지2 파일을 여기에 드래그 앤 드롭 하거나 클릭하세요.</p>
-                <input type="file" name="image2" id="id_image2" class="form-control" onchange="previewUploadedFile('id_image2', 'preview_image2')">
+            {# 이미지 업로드 필드 처리 (이미지2) #}
+            {% if form.image2 %}
+            <div class="form-group" style="flex-basis: 48%;">
+                <label for="id_image2">{{ form.image2.label }}</label>
+                <div id="drop_area_image2" class="border border-primary p-4 text-center" 
+                     ondrop="handleDrop(event, 'id_image2', 'preview_image2', 'dropText2')" 
+                     ondragover="handleDragOver(event)" style="cursor: pointer;">
+                    <p id="dropText2" class="text-primary">Drag and Drop Image 2 Here or Click to Upload</p>
+                    <img id="preview_image2" src="{{ initial_image2_url }}" alt="이미지2 미리보기" 
+                         class="img-preview mt-3" 
+                         style="display: {% if initial_image2_url %}block{% else %}none{% endif %};">
+                </div>
+                <input type="file" name="image2" id="id_image2" class="form-control-file mt-2 d-none" 
+                       onchange="previewFile('id_image2', 'preview_image2', 'dropText2')">
+                {% for error in form.image2.errors %}
+                    <div class="text-danger">{{ error }}</div>
+                {% endfor %}
             </div>
-            <img id="preview_image2" src="{{ initial_image2_url }}" alt="이미지2 미리보기" style="max-width: 300px; max-height: 300px; display: {% if initial_image2_url %}block{% else %}none{% endif %};">
-            {% for error in form.image2.errors %}
-                <div class="text-danger">{{ error }}</div>
-            {% endfor %}
+            {% endif %}
         </div>
-
+{% comment %} 
         {# 탐지기 선택 필드 (체크박스) #}
-        <div class="mb-3">
-            <label class="form-label">{{ form.detectors.label }}</label>
+        {% if form.detectors %}
+        <div class="form-group">
+            <label>{{ form.detectors.label }}</label>
             <div class="form-check">
                 {% for checkbox in form.detectors %}
                     <div class="form-check">
@@ -64,10 +80,12 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %} {% endcomment %}
 
-        {# 예측기 선택 필드 (체크박스) #}
-        <div class="mb-3">
-            <label class="form-label">{{ form.predictors.label }}</label>
+        {% comment %} {# 예측기 선택 필드 (체크박스) #}
+        {% if form.predictors %}
+        <div class="form-group">
+            <label>{{ form.predictors.label }}</label>
             <div class="form-check">
                 {% for checkbox in form.predictors %}
                     <div class="form-check">
@@ -76,85 +94,67 @@
                 {% endfor %}
             </div>
         </div>
+        {% endif %} {% endcomment %}
 
-        {# 등록/수정 버튼 - 상태에 따라 버튼 텍스트 변경 #}
-        {% if form.instance.pk %}
-            <input type="submit" value="질문 수정" class="btn btn-primary">
-        {% else %}
-            <input type="submit" value="질문 등록" class="btn btn-primary">
-        {% endif %}
-        
+        {# 등록/수정 버튼 #}
+        <input type="submit" value="{{ form.instance.pk|yesno:'질문 수정,질문 등록' }}" class="btn btn-primary">
     </form>
 </div>
-
 {% endblock %}
 
 {% block script %}
 <script>
-    /**
-     * 이미지 미리보기 함수
-     * 사용자가 업로드한 이미지를 미리 보기로 표시함
-     * 
-     * @param {string} inputId - 파일 선택 input 요소의 ID
-     * @param {string} previewId - 미리보기를 표시할 img 요소의 ID
-     */
-    function previewUploadedFile(inputId, previewId) {
-        var inputElement = document.getElementById(inputId);
-        var previewElement = document.getElementById(previewId);
+    function previewFile(inputId, previewId, dropTextId) {
+        var fileInput = document.getElementById(inputId);
+        var previewImage = document.getElementById(previewId);
+        var dropText = document.getElementById(dropTextId);
         
-        // 파일이 선택되었을 경우
-        if (inputElement.files && inputElement.files[0]) {
+        if (fileInput.files && fileInput.files[0]) {
             var reader = new FileReader();
-
             reader.onload = function(e) {
-                // 미리보기 이미지에 파일 URL 설정
-                previewElement.src = e.target.result;
-                previewElement.style.display = 'block';  // 이미지를 보이도록 설정
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                dropText.style.display = 'none';  // DragNDrop 텍스트 숨김
             };
-
-            reader.readAsDataURL(inputElement.files[0]);  // 파일 읽기
+            reader.readAsDataURL(fileInput.files[0]);
         } else {
-            // 파일이 없을 경우 미리보기 숨기기
-            previewElement.src = "#";
-            previewElement.style.display = 'none';
+            previewImage.src = "#";
+            previewImage.style.display = 'none';
+            dropText.style.display = 'block';  // DragNDrop 텍스트 표시
         }
     }
 
-    /**
-     * 드래그 앤 드롭 파일 핸들러
-     * 
-     * @param {Event} event - 드롭 이벤트
-     * @param {string} inputId - 파일 선택 input 요소의 ID
-     * @param {string} previewId - 미리보기를 표시할 img 요소의 ID
-     */
-    function dropHandler(event, inputId, previewId) {
-        event.preventDefault();  // 기본 드롭 동작 방지
-
-        var inputElement = document.getElementById(inputId);
-        inputElement.files = event.dataTransfer.files;  // 드롭한 파일을 input에 설정
-        previewUploadedFile(inputId, previewId);  // 파일 미리보기
+    function handleDrop(event, inputId, previewId, dropTextId) {
+        event.preventDefault();
+        var fileInput = document.getElementById(inputId);
+        fileInput.files = event.dataTransfer.files;
+        previewFile(inputId, previewId, dropTextId);
     }
 
-    /**
-     * 드래그 오버 핸들러
-     * 
-     * @param {Event} event - 드래그 오버 이벤트
-     */
-    function dragOverHandler(event) {
-        event.preventDefault();  // 기본 드래그 동작 방지
+    function handleDragOver(event) {
+        event.preventDefault();
     }
+
+    // 클릭 시 파일 선택창 열기 (이미지 업로드 필드를 자동으로 추가)
+    document.querySelectorAll("[id^=drop_area]").forEach(dropArea => {
+        dropArea.addEventListener('click', function() {
+            const fileInputId = dropArea.id.replace('drop_area_', 'id_');
+            document.getElementById(fileInputId).click();
+        });
+    });
 </script>
 
 <style>
-    .drag-drop-area {
-        border: 2px dashed #007bff;
-        padding: 20px;
-        text-align: center;
-        cursor: pointer;
+    .img-preview {
+        width: 200px;
+        height: 200px;
+        object-fit: contain;
+        border: 1px solid #ccc;d
+        padding: 5px;
     }
-    .drag-drop-area p {
-        margin: 0;
-        color: #007bff;
+    .form-row {
+        display: flex;
+        justify-content: space-between;
     }
 </style>
 {% endblock %}

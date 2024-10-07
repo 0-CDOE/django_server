@@ -10,7 +10,7 @@ import numpy as np
 from ..models.FaceDetector import FaceDetector, FaceDetectorFactory
 from ..models.FacePredictor import FacePredictor, FacePredictorFactory
 from ..models.FaceEncoder import FaceEncoder
-from ..models.TargetFaceMatcher import TargetFaceMatcher
+from ..models.FaceMatcher import TargetFaceMatcher
 from ..annotation.FaceInfoCounter import FaceInfoCounter
 from ..annotation.InfoDrawer import InfoDrawer
 from ..annotation.InfoWriter import InfoWriter

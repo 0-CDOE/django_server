@@ -1,25 +1,10 @@
+{% load custom_tags %}
+
 {% comment %} 푸터 {% endcomment %}
 <!-- 푸터 영역 -->
 <footer class="sticky-footer bg-white">  {# 고정된 푸터, 흰 배경 #}
     <div class="container my-auto">  {# 컨테이너로 푸터 내용 감싸기 #}
         <div class="row justify-content-center align-items-center">  {# 중앙 정렬을 위한 플렉스 레이아웃 #}
-            <div class="col-2">
-                {% comment %} 질문 등록 버튼 {% endcomment %}
-                {% comment %} <a href="{% url 'pybo:question_create' %}" class="btn btn-primary">질문 등록</a> {% endcomment %}
-            </div>
-            {% comment %} 검색창 (중앙 배치, 넓이 조정) {% endcomment %}
-            <div class="col-md-6">  {# 중간 크기의 화면에서 6/12 폭을 사용하는 검색창 #}
-                <div class="input-group mw-100">  {# 전체 너비를 사용하는 입력 그룹 #}
-                    <input type="text" class="form-control bg-light border-0 small"  {# 검색어 입력 필드 #}
-                        placeholder="Search for..." aria-label="Search" aria-describedby="basic-addon2" 
-                        id="search_kw" value="{{ kw|default_if_none:'' }}">  {# 기본값으로 검색어 유지 #}
-                    <div class="input-group-append">  {# 입력 필드 오른쪽에 버튼 추가 #}
-                        <button class="btn btn-primary" type="button" id="btn_search">  {# 검색 버튼 #}
-                            <i class="fas fa-search fa-sm"></i>  {# 검색 아이콘 #}
-                        </button>
-                    </div>
-                </div>
-            </div>
 
             {% comment %} 푸터 텍스트 (중앙 배치) {% endcomment %}
             <div class="col-md-12 text-center mt-3">  {# 전체 폭을 사용하는 중앙 정렬된 텍스트 #}

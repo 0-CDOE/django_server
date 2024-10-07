@@ -1,4 +1,6 @@
 {% load static %}
+{% load custom_tags %}
+
 <!--  Topbar -->
 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
 
@@ -7,10 +9,13 @@
         
         <!-- 페이지 제목과 설명 -->
         <div class="page-header">
-            <h1 class="h3 mb-2 text-primary font-weight-bold">페이지 제목</h1> 
-            <p class="mb-4 text-muted">
-                페이지 설명 텍스트를 여기에 입력하세요. 간결하고 명확한 설명을 제공하세요.
-            </p>
+            {% if board_name %}
+            <a href="{% url_byME 'post' 'list' %}" class="h3 mb-2 text-primary font-weight-bold">{% board_name_for_user %}</a> 
+            <p class="mb-4 text-muted">{% board_explanation %}</p>
+            {% else %}
+            <h1 class="h3 mb-2 text-primary font-weight-bold">홈페이지</h1> 
+            <p class="mb-4 text-muted">Django Project site of 0!Code</p>
+            {% endif %}
         </div>
         
     </div>

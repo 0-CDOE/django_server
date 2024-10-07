@@ -1,25 +1,33 @@
-{% comment %} 필드 오류와 넌필드 오류를 출력한다. {% endcomment %}
-{% if form.errors %}  {# 폼에 오류가 있을 경우 #}
-    <div class="alert alert-danger">  {# 오류 메시지를 표시하기 위한 경고 알림 #}
-        {% comment %} 각 필드의 오류를 출력하는 루프 {% endcomment %}
-        {% for field in form %}  {# 폼의 각 필드에 대해 반복 #}
-            {% comment %} 필드에 오류가 있을 경우 해당 오류를 출력 {% endcomment %}
-            {% if field.errors %}  {# 필드에 오류가 있는 경우 #}
+{% comment %} 
+    폼에서 발생한 오류(필드 오류와 넌필드 오류)를 출력하는 템플릿입니다.
+    필드 오류는 특정 입력 필드에서 발생한 오류이고, 넌필드 오류는 전체 폼에서 발생한 오류입니다.
+{% endcomment %}
+
+{% if form.errors %}  {# 폼에 오류가 있을 경우 오류 메시지 표시 #}
+    <div class="alert alert-danger">  {# 경고 스타일의 알림 상자 #}
+        
+        {# 각 필드의 오류를 반복하면서 출력 #}
+        {% for field in form %}  {# Django 폼의 각 필드에 대해 반복문 실행 #}
+            
+            {% if field.errors %}  {# 필드에 오류가 있는 경우만 출력 #}
                 <div>
-                    {% comment %} 필드 이름을 출력 {% endcomment %}
-                    <strong>{{ field.label }}</strong>  {# 필드의 라벨 출력 #}
-                    {% comment %} 해당 필드의 오류 메시지를 출력 {% endcomment %}
-                    {{ field.errors }}  {# 필드 오류 메시지 출력 #}
+                    {# 필드 이름을 굵게 출력하여 강조 #}
+                    <strong>{{ field.label }}</strong>  {# 필드 라벨 (이름) 출력 #}
+                    
+                    {# 필드에 해당하는 오류 메시지를 출력 #}
+                    {{ field.errors }}  {# 필드의 오류 리스트를 출력 #}
                 </div>
             {% endif %}
+        
         {% endfor %}
 
-        {% comment %} 폼 전반에 걸친 오류를 출력하는 부분 (넌필드 오류) {% endcomment %}
-        {% for error in form.non_field_errors %}  {# 넌필드 오류를 반복 #}
+        {# 폼 전반에 대한 오류 (넌필드 오류) 출력 #}
+        {% for error in form.non_field_errors %}  {# 넌필드 오류가 있는 경우 반복문 실행 #}
             <div>
-                {% comment %} 넌필드 오류를 출력 {% endcomment %}
+                {# 넌필드 오류를 굵게 출력 #}
                 <strong>{{ error }}</strong>  {# 넌필드 오류 메시지 출력 #}
             </div>
         {% endfor %}
-    </div>
+    
+    </div>  {# 오류 메시지를 담고 있는 알림 상자 종료 #}
 {% endif %}

@@ -27,5 +27,5 @@ urlpatterns = [
     path('', RedirectView.as_view(url='/pybo/')),  # 루트 URL을 'pybo'로 리다이렉트
 ]
 
-handler404 = 'common.views.page_not_found'
+handler404 = 'common.views.page_not_found' # 404 에러 발생 시 호출되는 메서드
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # MEDIA_URL로 시작하는 URL은 MEDIA_ROOT에서 파일을 찾아 반환

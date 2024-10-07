@@ -17,6 +17,6 @@ class Saver(PipelineStep):
         data.output_image_path = output_image_path
         os.makedirs(config['results_folder'], exist_ok=True)
         cv2.imwrite(output_image_path, cv2.cvtColor(result_image, cv2.COLOR_RGB2BGR))
-        logging.info(f"Saver : 그림 그린 이미지 저장: {output_image_path}")
+        logging.info(f"Saver : ai가 그린 이미지 저장: {output_image_path}")
 
         return data

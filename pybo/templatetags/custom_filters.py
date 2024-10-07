@@ -1,6 +1,5 @@
 from django import template  # Django 템플릿 라이브러리
 from django.utils.safestring import mark_safe  # 안전한 HTML 문자열로 변환하는 함수
-
 import markdown  # 마크다운 문자열을 HTML로 변환하기 위한 모듈
 
 # ===============================
@@ -60,7 +59,11 @@ def md_to_html(value):
         value = ""
 
     # 마크다운 확장 기능 설정
-    extensions = ["nl2br", "fenced_code"]
+    extensions =  [
+        "markdown.extensions.extra", 
+        "markdown.extensions.nl2br", 
+        "markdown.extensions.fenced_code"
+        ]
 
     # 마크다운을 HTML로 변환하고, 안전한 HTML로 처리하여 반환
     return mark_safe(markdown.markdown(value, extensions=extensions))
@@ -85,3 +88,9 @@ def add_class(field, css_class):
         Widget: 주어진 필드에 CSS 클래스를 적용한 위젯
     """
     return field.as_widget(attrs={"class": css_class})
+
+@register.filter
+def zip_lists(a, b):
+    """두 리스트를 zip으로 묶어준다"""
+    return zip(a, b)
+
