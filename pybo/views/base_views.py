@@ -29,6 +29,7 @@ board_names_for_user = [board_name_for_user[board_name] for board_name in board_
 # 게시판별 URL 리스트
 board_urls = [f'{app_name}:{board_name}_{content_type["post"]}_{end_point["list"]}' for board_name in board_names]
 
+
 class BaseExtraContextMixin:
     """
     BaseExtraContextMixin 클래스는 각 뷰에서 추가적인 데이터를 템플릿에 전달하기 위한 공통 믹스인입니다.
@@ -51,7 +52,7 @@ class BaseExtraContextMixin:
         추가 데이터를 포함한 템플릿 컨텍스트 딕셔너리입니다.
     """
     
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         """
         템플릿에 전달할 추가 데이터를 설정하는 메서드입니다.
 
@@ -118,7 +119,7 @@ class BaseListView(ListView):
     get_context_data(**kwargs):
         템플릿에 추가적인 데이터를 전달합니다. 예를 들어, 페이지 번호와 검색어를 설정합니다.
     """
-    paginate_by = 10  # 한 페이지에 보여줄 게시글 수
+    paginate_by = 20  # 한 페이지에 보여줄 게시글 수
     template_name = ''  # 사용할 템플릿 (하위 클래스에서 설정 필요)
     search_fields = []  # 검색 필드 (하위 클래스에서 설정 필요)
 
@@ -151,7 +152,7 @@ class BaseListView(ListView):
         
         return post_list  # 필터링된 게시글 QuerySet 반환
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         """
         get_context_data 메서드는 템플릿에 전달할 추가 데이터를 설정합니다.
 
@@ -175,142 +176,20 @@ class BaseListView(ListView):
 
         # 페이지 인덱스 계산
         page_obj = context['paginator'].get_page(context['page'])  # 페이지네이션 객체에서 현재 페이지 가져오기
+        """
+        현재 페이지에서 몇 번째 글부터 시작하는지를 결정하는 값이 start_index입니다. 
+        예를 들어, 페이지 1에서 게시글의 start_index()는 1번부터 시작하고, 
+        페이지 2에서는 21번부터 시작하는 식입니다.
+        """
         start_index = page_obj.start_index()  # 현재 페이지의 시작 인덱스 계산
-        post_indices = [(start_index + i, obj) for i, obj in enumerate(page_obj.object_list)]  # 게시글 인덱스와 객체를 리스트로 만듦
-        context['post_indices'] = post_indices  # 게시글 인덱스 정보 추가
+        total_post_count = context['paginator'].count  # 전체 글 개수 가져오기
+        post_indices = [(total_post_count - (start_index - 1) - i, obj) for i, obj in enumerate(page_obj.object_list)]  # 게시글 인덱스와 객체를 리스트로 만듦
+        context['post_indices'] = post_indices  # 게시글 인덱스를 역순으로 설정
         
         return context  # 추가 데이터를 포함한 컨텍스트 반환
 
 
-class BaseReadView(DetailView):
-    """
-    BaseReadView는 게시글의 상세 내용을 보여주는 공통 뷰입니다.
-
-    게시글과 댓글에 대한 상세 정보를 보여줍니다.
-
-    Attributes
-    ----------
-    model : Model
-        사용할 모델을 지정합니다. 하위 클래스에서 설정 필요.
-        
-    template_name : str
-        사용할 템플릿 파일의 경로를 지정합니다. 하위 클래스에서 설정 필요.
-        
-    context_object_name : str
-        템플릿에서 사용할 객체의 이름을 지정합니다.
-
-    Methods
-    -------
-    get_context_data(**kwargs):
-        게시글의 댓글 및 작성자 여부 등의 추가 데이터를 템플릿에 전달합니다.
-    
-    _process_comments(comments):
-        각 댓글에 대해 작성자 여부 및 AI 처리 여부를 추가합니다.
-    
-    _get_comment_messages(comments):
-        각 댓글에 연결된 메시지를 가져옵니다.
-    """
-    model = NotImplemented  # 사용할 모델 지정 (하위 클래스에서 설정 필요)
-    template_name = NotImplemented  # 사용할 템플릿 지정 (하위 클래스에서 설정 필요)
-    context_object_name = 'post'  # 템플릿에서 사용할 객체 이름
-
-    def get_context_data(self, **kwargs):
-        """
-        get_context_data 메서드는 게시글과 그에 대한 댓글 정보를 템플릿에 전달합니다.
-
-        작성자가 현재 사용자인지 여부와 댓글 정보를 설정합니다.
-
-        Parameters
-        ----------
-        kwargs : dict
-            템플릿에 전달할 추가적인 키워드 인자입니다.
-
-        Returns
-        -------
-        dict
-            템플릿에 전달할 추가적인 데이터를 포함한 컨텍스트 딕셔너리입니다.
-        """
-        context = super().get_context_data(**kwargs)  # 부모 클래스의 get_context_data 호출
-        post = self.get_object()  # 현재 게시글 가져오기
-        comments = post.comments.all()  # 게시글에 달린 모든 댓글 가져오기
-
-        # 작성자가 현재 사용자인지 여부와 댓글 정보 추가
-        context['is_author'] = self.request.user == post.author
-        
-        # 댓글 및 메시지 처리
-        context['processed_comments'] = self._process_comments(comments)
-        
-        return context  # 추가 데이터를 포함한 컨텍스트 반환
-
-    def _process_comments(self, comments):
-        """
-        _process_comments 메서드는 각 댓글에 대해 작성자 여부 및 AI 처리 여부를 추가하고, 메시지를 연결합니다.
-
-        Parameters
-        ----------
-        comments : QuerySet
-            처리할 댓글들의 QuerySet입니다.
-
-        Returns
-        -------
-        list
-            처리된 댓글 목록을 리스트 형태로 반환합니다.
-        """
-        processed_comments = []  # 처리된 댓글을 저장할 리스트
-        comment_messages = self._get_comment_messages(comments)  # 각 댓글에 연결된 메시지 가져오기
-
-        # 각 댓글을 처리하여 필요한 정보를 추가
-        for comment in comments:
-            is_author = self.request.user == comment.author  # 현재 사용자가 댓글 작성자인지 여부
-            is_ai_processing = (comment.content == "AI가 처리 중입니다." and comment.author.username == "AI")  # AI 처리 여부 확인
-            
-            # comment에 image1과 image2 필드가 있는지 확인
-            image1_url = comment.image1.url if hasattr(comment, 'image1') and comment.image1 else None
-            image2_url = comment.image2.url if hasattr(comment, 'image2') and comment.image2 else None
-            
-            processed_comments.append({
-                'id': comment.id,
-                'content': comment.content,
-                'is_author': is_author,
-                'is_ai_processing': is_ai_processing,
-                'image1': image1_url,
-                'image2': image2_url,
-                'modify_date': comment.modify_date,
-                'author_username': comment.author.username,
-                'create_date': comment.create_date,
-                'voter_count': comment.voter.count(),
-                'messages': comment_messages.get(str(comment.id), [])  # 해당 댓글의 메시지 추가
-            })
-        return processed_comments  # 처리된 댓글 리스트 반환
-
-    def _get_comment_messages(self, comments):
-        """
-        _get_comment_messages 메서드는 각 댓글에 연결된 메시지를 가져옵니다.
-
-        Parameters
-        ----------
-        comments : QuerySet
-            메시지를 연결할 댓글들의 QuerySet입니다.
-
-        Returns
-        -------
-        dict
-            댓글 ID를 키로 하여 메시지를 리스트로 저장한 딕셔너리입니다.
-        """
-        comment_messages = {str(comment.id): [] for comment in comments}  # 댓글 ID로 초기화된 딕셔너리
-        for message in messages.get_messages(self.request):
-            for comment in comments:
-                # message.tags에 comment.id가 있는지 확인 
-                # massage.tags 설정은 각 해위하는 뷰(예 : voteview) 에서 extra_tags 로 설정
-                if str(comment.id) in message.tags:  
-                    comment_messages[str(comment.id)].append({
-                        'text': message.message,
-                        'tags': message.tags,
-                    })
-        return comment_messages  # 댓글 메시지 딕셔너리 반환
-
-
-class BaseFormMixin(BaseExtraContextMixin):
+class BaseFormMixin(LoginRequiredMixin, BaseExtraContextMixin):
     """
     BaseFormMixin 클래스는 게시글 또는 댓글을 생성하거나 수정할 때 사용할 공통 폼 믹스인입니다.
 
@@ -343,7 +222,7 @@ class BaseFormMixin(BaseExtraContextMixin):
     form_class = None  # 사용할 폼 클래스 (하위 클래스에서 설정 필요)
     template_name = None  # 사용할 템플릿 (하위 클래스에서 설정 필요)
 
-    def get_context_data(self, **kwargs):
+    def get_context_data(self, **kwargs) -> dict:
         """
         템플릿에서 사용할 이미지 URL을 설정하는 메서드입니다.
 
@@ -423,7 +302,7 @@ class BaseFormMixin(BaseExtraContextMixin):
         return obj  # 저장된 객체 반환
 
 
-class BaseCreateView(LoginRequiredMixin, BaseFormMixin, CreateView):
+class BaseCreateView(BaseFormMixin, CreateView):
     """
     BaseCreateView 클래스는 게시글 또는 댓글을 생성하는 기본 뷰입니다.
 
@@ -467,7 +346,135 @@ class BaseCreateView(LoginRequiredMixin, BaseFormMixin, CreateView):
         return redirect(reverse(self.success_url, kwargs={'pk': obj.pk}))
 
 
-class BaseUpdateView(LoginRequiredMixin, BaseFormMixin, UpdateView):
+class BaseReadView(DetailView):
+    """
+    BaseReadView는 게시글의 상세 내용을 보여주는 공통 뷰입니다.
+
+    게시글과 댓글에 대한 상세 정보를 보여줍니다.
+
+    Attributes
+    ----------
+    model : Model
+        사용할 모델을 지정합니다. 하위 클래스에서 설정 필요.
+        
+    template_name : str
+        사용할 템플릿 파일의 경로를 지정합니다. 하위 클래스에서 설정 필요.
+        
+    context_object_name : str
+        템플릿에서 사용할 객체의 이름을 지정합니다.
+
+    Methods
+    -------
+    get_context_data(**kwargs):
+        게시글의 댓글 및 작성자 여부 등의 추가 데이터를 템플릿에 전달합니다.
+    
+    _process_comments(comments):
+        각 댓글에 대해 작성자 여부 및 AI 처리 여부를 추가합니다.
+    
+    _get_comment_messages(comments):
+        각 댓글에 연결된 메시지를 가져옵니다.
+    """
+    model = NotImplemented  # 사용할 모델 지정 (하위 클래스에서 설정 필요)
+    template_name = NotImplemented  # 사용할 템플릿 지정 (하위 클래스에서 설정 필요)
+    context_object_name = 'post'  # 템플릿에서 사용할 객체 이름
+
+    def get_context_data(self, **kwargs) -> dict:
+        """
+        get_context_data 메서드는 게시글과 그에 대한 댓글 정보를 템플릿에 전달합니다.
+
+        작성자가 현재 사용자인지 여부와 댓글 정보를 설정합니다.
+
+        Parameters
+        ----------
+        kwargs : dict
+            템플릿에 전달할 추가적인 키워드 인자입니다.
+
+        Returns
+        -------
+        dict
+            템플릿에 전달할 추가적인 데이터를 포함한 컨텍스트 딕셔너리입니다.
+        """
+        context = super().get_context_data(**kwargs)  # 부모 클래스의 get_context_data 호출
+        post = self.get_object()  # 현재 게시글 가져오기
+        comments = post.comments.all()  # 게시글에 달린 모든 댓글 가져오기
+
+        # 작성자가 현재 사용자인지 여부와 댓글 정보 추가
+        context['is_author'] = self.request.user == post.author
+        
+        # 댓글 및 메시지 처리
+        context['processed_comments'] = self._process_comments(comments)
+        
+        return context  # 추가 데이터를 포함한 컨텍스트 반환
+
+    def _process_comments(self, comments) -> list:
+        """
+        _process_comments 메서드는 각 댓글에 대해 작성자 여부 및 AI 처리 여부를 추가하고, 메시지를 연결합니다.
+
+        Parameters
+        ----------
+        comments : QuerySet
+            처리할 댓글들의 QuerySet입니다.
+
+        Returns
+        -------
+        list
+            처리된 댓글 목록을 리스트 형태로 반환합니다.
+        """
+        processed_comments = []  # 처리된 댓글을 저장할 리스트
+        comment_messages = self._get_comment_messages(comments)  # 각 댓글에 연결된 메시지 가져오기
+
+        # 각 댓글을 처리하여 필요한 정보를 추가
+        for comment in comments:
+            is_author = self.request.user == comment.author  # 현재 사용자가 댓글 작성자인지 여부
+            is_ai_processing = (comment.content == "AI가 처리 중입니다." and comment.author.username == "AI")  # AI 처리 여부 확인
+            
+            # comment에 image1과 image2 필드가 있는지 확인
+            image1_url = comment.image1.url if hasattr(comment, 'image1') and comment.image1 else None
+            image2_url = comment.image2.url if hasattr(comment, 'image2') and comment.image2 else None
+            
+            processed_comments.append({
+                'id': comment.id,
+                'content': comment.content,
+                'is_author': is_author,
+                'is_ai_processing': is_ai_processing,
+                'image1': image1_url,
+                'image2': image2_url,
+                'modify_date': comment.modify_date,
+                'author_username': comment.author.username,
+                'create_date': comment.create_date,
+                'voter_count': comment.voter.count(),
+                'messages': comment_messages.get(str(comment.id), [])  # 해당 댓글의 메시지 추가
+            })
+        return processed_comments  # 처리된 댓글 리스트 반환
+
+    def _get_comment_messages(self, comments) -> dict:
+        """
+        _get_comment_messages 메서드는 각 댓글에 연결된 메시지를 가져옵니다.
+
+        Parameters
+        ----------
+        comments : QuerySet
+            메시지를 연결할 댓글들의 QuerySet입니다.
+
+        Returns
+        -------
+        dict
+            댓글 ID를 키로 하여 메시지를 리스트로 저장한 딕셔너리입니다.
+        """
+        comment_messages = {str(comment.id): [] for comment in comments}  # 댓글 ID로 초기화된 딕셔너리
+        for message in messages.get_messages(self.request):
+            for comment in comments:
+                # message.tags에 comment.id가 있는지 확인 
+                # massage.tags 설정은 각 해위하는 뷰(예 : voteview) 에서 extra_tags 로 설정
+                if str(comment.id) in message.tags:  
+                    comment_messages[str(comment.id)].append({
+                        'text': message.message,
+                        'tags': message.tags,
+                    })
+        return comment_messages  # 댓글 메시지 딕셔너리 반환
+
+
+class BaseUpdateView(BaseFormMixin, UpdateView):
     """
     BaseUpdateView 클래스는 게시글 또는 댓글을 수정하는 기본 뷰입니다.
 
@@ -605,7 +612,7 @@ class BaseVoteView(LoginRequiredMixin, RedirectView):
     model = NotImplemented  # 사용할 모델 지정 (하위 클래스에서 설정 필요)
     success_url = NotImplemented  # 리다이렉트할 URL 지정 (하위 클래스에서 설정 필요)
 
-    def get_redirect_url(self, *args, **kwargs):
+    def get_redirect_url(self, *args, **kwargs) -> str:
         """
         추천 로직을 처리한 후 리다이렉트할 URL을 반환하는 메서드입니다.
 

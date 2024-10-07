@@ -1,0 +1,167 @@
+// ==========================
+// User and Permission Tables Group
+// ==========================
+Table auth_user {
+  id integer [primary key, increment]
+  password varchar(128) [not null]
+  last_login datetime [null]
+  is_superuser boolean [default: false]
+  username varchar(150) [not null, unique]
+  first_name varchar(150)
+  last_name varchar(150)
+  email varchar(254) [not null]
+  is_staff boolean [default: false]
+  is_active boolean [default: true]
+  date_joined datetime [default: `now()`]
+}
+
+Table auth_group {
+  id integer [primary key, increment]
+  name varchar(150) [not null, unique]
+}
+
+Table auth_permission {
+  id integer [primary key, increment]
+  name varchar(255) [not null]
+  content_type_id integer [ref: > django_content_type.id]
+  codename varchar(100) [not null]
+}
+
+// User-Group Relationship
+Table auth_user_groups {
+  id integer [primary key, increment]
+  user_id integer [not null, ref: > auth_user.id]
+  group_id integer [not null, ref: > auth_group.id]
+}
+
+// Group-Permission Relationship
+Table auth_group_permissions {
+  id integer [primary key, increment]
+  group_id integer [not null, ref: > auth_group.id]
+  permission_id integer [not null, ref: > auth_permission.id]
+}
+
+// User-Permission Relationship
+Table auth_user_user_permissions {
+  id integer [primary key, increment]
+  user_id integer [not null, ref: > auth_user.id]
+  permission_id integer [not null, ref: > auth_permission.id]
+}
+
+// Content Types
+Table django_content_type {
+  id integer [primary key, increment]
+  app_label varchar(100) [not null]
+  model varchar(100) [not null]
+
+  indexes {
+    (app_label, model) [unique]
+  }
+}
+
+// ==========================
+// Detection and Similarity Tables Group
+// ==========================
+
+// Detection Post Model
+Table detection_post {
+  id integer [primary key, increment]
+  subject varchar(200) [not null]
+  content text [not null]
+  create_date datetime [not null, default: `now()`]
+  modify_date datetime [null]
+  view_count integer [default: 0]
+  image1 varchar(100) [null]
+  author_id integer [ref: > auth_user.id]
+}
+
+// Detection Comment Model
+Table detection_comment {
+  id integer [primary key, increment]
+  content text [not null]
+  create_date datetime [not null, default: `now()`]
+  modify_date datetime [null]
+  image1 varchar(100) [null]
+  author_id integer [ref: > auth_user.id]
+  post_id bigint [ref: > detection_post.id]
+}
+
+// Similarity Post Model
+Table similarity_post {
+  id integer [primary key, increment]
+  subject varchar(200) [not null]
+  content text [not null]
+  create_date datetime [not null, default: `now()`]
+  modify_date datetime [null]
+  view_count integer [default: 0]
+  image1 varchar(100) [null]
+  image2 varchar(100) [null]
+  author_id integer [ref: > auth_user.id]
+}
+
+// Similarity Comment Model
+Table similarity_comment {
+  id integer [primary key, increment]
+  content text [not null]
+  create_date datetime [not null, default: `now()`]
+  modify_date datetime [null]
+  image1 varchar(100) [null]
+  image2 varchar(100) [null]
+  author_id integer [ref: > auth_user.id]
+  post_id bigint [ref: > similarity_post.id]
+}
+
+// ==========================
+// Voting Tables Group (ManyToMany)
+// ==========================
+
+// Detection Post Voter
+Table detection_post_voter {
+  id integer [primary key, increment]
+  detectionpost_id bigint [not null, ref: > detection_post.id]
+  user_id integer [not null, ref: > auth_user.id]
+}
+
+// Detection Comment Voter
+Table detection_comment_voter {
+  id integer [primary key, increment]
+  detectioncomment_id bigint [not null, ref: > detection_comment.id]
+  user_id integer [not null, ref: > auth_user.id]
+}
+
+// Similarity Post Voter
+Table similarity_post_voter {
+  id integer [primary key, increment]
+  similaritypost_id bigint [not null, ref: > similarity_post.id]
+  user_id integer [not null, ref: > auth_user.id]
+}
+
+// Similarity Comment Voter
+Table similarity_comment_voter {
+  id integer [primary key, increment]
+  similaritycomment_id bigint [not null, ref: > similarity_comment.id]
+  user_id integer [not null, ref: > auth_user.id]
+}
+
+// ==========================
+// Admin and Session Tables Group
+// ==========================
+
+// Django Admin Log
+Table django_admin_log {
+  id integer [primary key, increment]
+  action_time datetime [default: `now()`]
+  user_id integer [not null, ref: > auth_user.id]
+  content_type_id integer [ref: > django_content_type.id]
+  object_id text [null]
+  object_repr varchar(200) [not null]
+  action_flag smallint [not null]
+  change_message text [not null]
+}
+
+// Django Sessions
+Table django_session {
+  session_key varchar(40) [primary key]
+  session_data text [not null]
+  expire_date datetime [not null]
+}

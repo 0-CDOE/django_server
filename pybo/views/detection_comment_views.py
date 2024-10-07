@@ -21,7 +21,7 @@ end_point = URLS['CRUD_AND_MORE']
 read_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["read"]}'
 
 
-class ExtraContextMixin(BaseExtraContextMixin):
+class DCommentECMixin(BaseExtraContextMixin):
     """
     모든 뷰에서 공통적으로 사용할 context 데이터를 추가하는 Mixin
     """
@@ -33,11 +33,8 @@ class ExtraContextMixin(BaseExtraContextMixin):
         return context
 
 
-# ==============================
-# Detection Comment Views
-# ==============================
 
-class DetectionCommentCreateView(ExtraContextMixin, BaseCreateView):
+class DetectionCommentCreateView(DCommentECMixin, BaseCreateView):
     """
     특정 인물 찾기 게시판의 댓글 생성 뷰.
     """

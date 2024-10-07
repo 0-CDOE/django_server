@@ -125,6 +125,7 @@ Docstring을 파라미터 변수 리턴값 자료형 등  아주 자세하게 �
 
 === 장고에서 추가 라이브러리로 마크다운 지원함 커스텀 템플릿 필터 필요 없음
 			
+=== DB 최적회 정규화 , 그러면 모델을 수정 해야 겠지?, 그러면 뷰도 바뀌 겠지?
 ==========================
 
 사용자 정의 컨텍스트: {'board_name': 'similarity', 'comment_form': <SimilarityCommentForm bound=False, valid=Unknown, fields=(content;image1;image2)>}
