@@ -238,44 +238,66 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     """
     
     from ..models import SimilarityPostModel, SimilarityComment
+    from django.shortcuts import get_object_or_404
+    from django.utils import timezone
     import httpx
     import mimetypes
+    import os
+    import platform
     
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
+    # 댓글 및 게시글 조회
     comment = get_object_or_404(SimilarityComment, pk=comment_id)  # 댓글 조회
     post = get_object_or_404(SimilarityPostModel, pk=post_id)  # 게시글 조회
-    
+
+    # 이미지 경로 조회
     image1_path = post.image1.path  # 첫 번째 이미지 경로
     image2_path = post.image2.path  # 두 번째 이미지 경로
 
+    # 이미지 타입 추정
     img1_type = mimetypes.guess_type(image1_path)
     img2_type = mimetypes.guess_type(image2_path)
-    
+
     try:
+        # 운영체제에 맞는 경로 처리 (특히 윈도우와 리눅스)
+        if platform.system() == "Windows":
+            image1_path = image1_path.replace("/", "\\")
+            image2_path = image2_path.replace("/", "\\")
+        else:
+            image1_path = image1_path.replace("\\", "/")
+            image2_path = image2_path.replace("\\", "/")
 
+        # AI 서버로 이미지 전송 및 처리 결과 받기
         with httpx.Client(timeout=httpx.Timeout(30.0)) as client:
-            with open(image1_path, 'rb') as f1, open(image2_path,'rb') as f2:
-                response = client.post("http://52.78.102.210:8007/process_ai_image_two/",
-                                    files={'file1':(image1_path,f1,img1_type[0]),'file2':(image2_path,f2,img2_type[0])})
+            with open(image1_path, 'rb') as f1, open(image2_path, 'rb') as f2:
+                response = client.post(
+                    "http://52.78.102.210:8007/process_ai_image_two/",
+                    files={
+                        'file1': (os.path.basename(image1_path), f1, img1_type[0]),
+                        'file2': (os.path.basename(image2_path), f2, img2_type[0])
+                    }
+                )
         
-        if response.status_code ==200:
+        # 응답 처리
+        if response.status_code == 200:
             result = response.json()
-            
-        comment.content = result['result']
-        comment.save()
 
-        logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
+            # AI 처리 결과를 댓글에 저장
+            comment.content = result.get('result', 'AI 처리 결과가 없습니다.')
+            comment.save()
+
+            logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
 
     except ValueError as e:
-        # 얼굴이 1개가 아니라던가 유사도 계산 중 문제가 발생했을 경우 처리
+        # 얼굴 유사도 계산 중 문제가 발생했을 경우 예외 처리
         logger.exception(f"얼굴 유사도 비교 실패 - 게시글 ID: {post_id}")
-        comment.content = str(e)  # 예외 메시지를 댓글 내용에 저장
+        comment.content = str(e)  # 예외 메시지를 댓글 내용으로 저장
         comment.modify_date = timezone.now()  # 수정 날짜 업데이트
         comment.save()
         
     except Exception as e:
-        # AI 처리 실패 시 예외 처리
+        # 기타 AI 처리 실패 시 예외 처리
         logger.exception(f"AI 처리 실패 - 게시글 ID: {post_id}")
         comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."  # 오류 메시지 저장
         comment.modify_date = timezone.now()  # 수정 날짜 업데이트

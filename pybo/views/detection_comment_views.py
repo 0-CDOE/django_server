@@ -216,31 +216,20 @@ def create_initial_ai_comment2(post_id: int) -> None:
     )
 
 
+
 @background(schedule=1)
 def detect_president(comment_id: int, post_id: int) -> None:
-    """
-    백그라운드에서 AI 처리를 실행하고, 처리 결과를 댓글로 업데이트하는 함수입니다.
-
-    Parameters
-    ----------
-    comment_id : int
-        처리 결과를 업데이트할 댓글의 ID입니다.
-        
-    post_id : int
-        댓글이 달린 게시글의 ID입니다.
-
-    Returns
-    -------
-    None
-    """
     
     from ..models import DetectionPostModel, DetectionCommentModel
-    from .ai import detect_president
     import httpx
-    import base64
-    import os.path
+    from django.shortcuts import get_object_or_404
+    from django.utils import timezone
+    import os
     from django.conf import settings
+    import base64
+    import platform
     
+
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
     comment = get_object_or_404(DetectionCommentModel, pk=comment_id)  # 댓글 조회
@@ -253,32 +242,39 @@ def detect_president(comment_id: int, post_id: int) -> None:
             with open(image_path, 'rb') as f:
                 files = {'file': f}
                 response = client.post("http://52.78.102.210:8007/process_ai_image/", files=files)
-                
 
         django_dir = settings.BASE_DIR
-        
-        if response.status_code == 200:  # ok
+
+        if response.status_code == 200:  # OK
             data = response.json()
 
-            #서버가 ubuntu이면 \가 path여서 문제 발생
-            str_path = data['image_path'].replace("/","\\")
+            # 서버에서 받은 경로 처리
+            str_path = data['image_path']
 
+            # 윈도우와 우분투를 모두 고려한 경로 처리
+            if platform.system() == "Windows":
+                # 윈도우일 경우
+                result_image_path = os.path.join('media', str_path.split('media\\', 1)[-1])
+            else:
+                # 우분투일 경우
+                result_image_path = os.path.join('media', str_path.split('media/', 1)[-1])
+
+            # 받은 이미지를 디코딩 후 저장
             result_image = data['base64_image']
-            result_text  = data['message']
-            result_image_path = "media\\" + str_path.split("media\\",1)[-1]
+            result_text = data['message']
 
             decode_image = base64.b64decode(result_image)
-            results_folder = os.path.join(django_dir,result_image_path)
+            results_folder = os.path.join(django_dir, result_image_path)
             print(f'================: {results_folder}')
-            with open(results_folder,'wb') as out_file:
+            with open(results_folder, 'wb') as out_file:
                 out_file.write(decode_image)
 
-        # AI로 이미지 처리 후 결과 이미지 경로 저장
-        comment.content = result_text
-        comment.image1 = str_path.split("media\\",1)[-1]  # 처리된 이미지 경로 저장
-        comment.save()
+            # AI로 이미지 처리 후 결과 이미지 경로 저장
+            comment.content = result_text
+            comment.image1 = result_image_path  # 처리된 이미지 경로 저장
+            comment.save()
 
-        logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
+            logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
 
     except Exception as e:
         # AI 처리 실패 시 예외 처리
