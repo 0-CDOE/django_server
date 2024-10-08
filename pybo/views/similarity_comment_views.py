@@ -1,6 +1,6 @@
 from django.urls import reverse
 from .base_views import BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
-from ..models import SimilarityComment, SimilarityPost
+from ..models import SimilarityComment, SimilarityPostModel
 from ..forms import SimilarityCommentForm
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
@@ -106,7 +106,7 @@ class SimilarityCommentCreateView(SimilarityCommentExtraContextMixin, BaseCreate
             작성된 댓글이 포함된 게시글 상세 페이지로 리다이렉트됩니다.
         """
         comment = form.instance  # 폼의 인스턴스를 가져옴
-        comment.post = get_object_or_404(SimilarityPost, pk=self.kwargs['pk'])  # 게시글과 댓글 연결
+        comment.post = get_object_or_404(SimilarityPostModel, pk=self.kwargs['pk'])  # 게시글과 댓글 연결
         response = super().form_valid(form)  # 상위 클래스의 form_valid() 호출
         messages.success(self.request, '댓글이 성공적으로 작성되었습니다.', extra_tags='comment')  # 성공 메시지 표시
         return response  # 상위 클래스의 결과 반환
@@ -190,11 +190,11 @@ def create_initial_ai_comment(post_id: int) -> None:
     """
     
     from django.contrib.auth.models import User
-    from ..models import SimilarityPost, SimilarityComment
+    from ..models import SimilarityPostModel, SimilarityComment
 
     logger.info(f"초기 AI 댓글 생성 - 게시글 ID: {post_id}")
 
-    post = get_object_or_404(SimilarityPost, pk=post_id)  # 게시글 조회
+    post = get_object_or_404(SimilarityPostModel, pk=post_id)  # 게시글 조회
 
     try:
         # AI 계정 슈퍼유저 조회
@@ -237,13 +237,13 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     None
     """
     
-    from ..models import SimilarityPost, SimilarityComment
+    from ..models import SimilarityPostModel, SimilarityComment
     from .ai import compare_faces
 
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
     comment = get_object_or_404(SimilarityComment, pk=comment_id)  # 댓글 조회
-    post = get_object_or_404(SimilarityPost, pk=post_id)  # 게시글 조회
+    post = get_object_or_404(SimilarityPostModel, pk=post_id)  # 게시글 조회
     
     image1_path = post.image1.path  # 첫 번째 이미지 경로
     image2_path = post.image2.path  # 두 번째 이미지 경로

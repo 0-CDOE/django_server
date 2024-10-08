@@ -1,7 +1,7 @@
 from django.contrib import messages
 
 from .base_views import BaseListView, BaseReadView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
-from ..models import SimilarityPost
+from ..models import SimilarityPostModel
 from ..forms import SimilarityPostForm, SimilarityCommentForm
 from .similarity_comment_views import create_initial_ai_comment
 
@@ -30,7 +30,7 @@ logger = logging.getLogger(URLS['APP_NAME'])  # 로거 생성
 3. 템플릿에서 Django 모델의 메타 정보를 사용할 수도 있습니다. (ex. object._meta.verbose_name)
 """
 
-class SimilarityPostExtraContextMixin(BaseExtraContextMixin):
+class SimilarityExtraContextMixin(BaseExtraContextMixin):
     """
     게시판에 공통적으로 사용할 추가 데이터를 템플릿에 전달하는 믹스인 클래스입니다.
 
@@ -62,7 +62,7 @@ class SimilarityPostExtraContextMixin(BaseExtraContextMixin):
         return context
 
 
-class SimilarityPostListView(SimilarityPostExtraContextMixin, BaseListView):
+class SimilarityPostListView(SimilarityExtraContextMixin, BaseListView):
     """
     유사도 게시판의 게시글 목록을 보여주는 뷰입니다.
     검색 기능을 제공하여 제목, 내용, 작성자 이름으로 검색할 수 있습니다.
@@ -79,12 +79,12 @@ class SimilarityPostListView(SimilarityPostExtraContextMixin, BaseListView):
         검색 가능한 필드를 설정합니다.
     """
 
-    model = SimilarityPost  # 모델 설정
+    model = SimilarityPostModel  # 모델 설정
     template_name = 'pybo/question_list.html'  # 템플릿 파일 경로
     search_fields = ['subject', 'content', 'author__username']  # 검색할 필드 설정
 
 
-class SimilarityPostCreateView(SimilarityPostExtraContextMixin, BaseCreateView):
+class SimilarityPostCreateView(SimilarityExtraContextMixin, BaseCreateView):
     """
     유사도 게시판의 게시글을 작성하는 뷰입니다.
     게시글 작성 후 AI 처리를 추가로 수행할 수 있습니다.
@@ -104,7 +104,7 @@ class SimilarityPostCreateView(SimilarityPostExtraContextMixin, BaseCreateView):
         사용할 템플릿 파일 경로입니다.
     """
 
-    model = SimilarityPost  # 모델 설정
+    model = SimilarityPostModel  # 모델 설정
     form_class = SimilarityPostForm  # 사용할 폼 클래스 설정
     success_url = read_url  # 성공 후 리다이렉트할 URL
     template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
@@ -142,7 +142,7 @@ class SimilarityPostCreateView(SimilarityPostExtraContextMixin, BaseCreateView):
         return response  # 부모 클래스의 form_valid 메서드 결과 반환
 
 
-class SimilarityPostReadView(SimilarityPostExtraContextMixin, BaseReadView):
+class SimilarityPostReadView(SimilarityExtraContextMixin, BaseReadView):
     """
     유사도 게시판의 게시글 상세 내용을 보여주는 뷰입니다.
 
@@ -155,11 +155,11 @@ class SimilarityPostReadView(SimilarityPostExtraContextMixin, BaseReadView):
         사용할 템플릿 파일 경로입니다.
     """
 
-    model = SimilarityPost  # 모델 설정
+    model = SimilarityPostModel  # 모델 설정
     template_name = 'pybo/question_detail.html'  # 템플릿 파일 경로
 
 
-class SimilarityPostUpdateView(SimilarityPostExtraContextMixin, BaseUpdateView):
+class SimilarityPostUpdateView(SimilarityExtraContextMixin, BaseUpdateView):
     """
     유사도 게시판의 게시글을 수정하는 뷰입니다.
     게시글 수정 후 AI 처리는 구현하지 않았습니다.
@@ -179,13 +179,13 @@ class SimilarityPostUpdateView(SimilarityPostExtraContextMixin, BaseUpdateView):
         사용할 템플릿 파일 경로입니다.
     """
 
-    model = SimilarityPost  # 모델 설정
+    model = SimilarityPostModel  # 모델 설정
     form_class = SimilarityPostForm  # 폼 클래스 설정
     success_url = read_url  # 수정 후 리다이렉트할 URL
     template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
 
 
-class SimilarityPostDeleteView(SimilarityPostExtraContextMixin, BaseDeleteView):
+class SimilarityPostDeleteView(SimilarityExtraContextMixin, BaseDeleteView):
     """
     유사도 게시판의 게시글을 삭제하는 뷰입니다.
 
@@ -198,11 +198,11 @@ class SimilarityPostDeleteView(SimilarityPostExtraContextMixin, BaseDeleteView):
         게시글 삭제 후 리다이렉트할 URL입니다.
     """
 
-    model = SimilarityPost  # 모델 설정
+    model = SimilarityPostModel  # 모델 설정
     success_url = list_url  # 삭제 후 리다이렉트할 URL
 
 
-class SimilarityPostVoteView(SimilarityPostExtraContextMixin, BaseVoteView):
+class SimilarityPostVoteView(SimilarityExtraContextMixin, BaseVoteView):
     """
     유사도 게시판의 게시글에 추천 기능을 제공하는 뷰입니다.
 
@@ -215,5 +215,5 @@ class SimilarityPostVoteView(SimilarityPostExtraContextMixin, BaseVoteView):
         게시글 추천 후 리다이렉트할 URL입니다.
     """
 
-    model = SimilarityPost  # 모델 설정
+    model = SimilarityPostModel  # 모델 설정
     success_url = read_url  # 추천 후 리다이렉트할 URL

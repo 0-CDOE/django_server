@@ -128,7 +128,7 @@ class DetectionConfig(BaseConfig):
     results_folder = os.path.join(django_dir, 'media', 'detection', 'a_image1')
 
 
-def process_image_with_drawing(image_path: str, selected_detectors: list = ['yolo']) -> str:
+def detect_president(image_path: str, selected_detectors: list = ['yolo']) -> str:
     """
     이미지를 처리하고, 얼굴 탐지 결과 바운딩 박스를 이미지에 그려 저장하는 함수입니다.
 

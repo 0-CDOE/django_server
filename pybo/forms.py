@@ -1,5 +1,5 @@
 from django import forms
-from pybo.models import SimilarityPost, SimilarityComment, DetectionPost, DetectionComment
+from pybo.models import SimilarityPostModel, SimilarityComment, DetectionPostModel, DetectionCommentModel
 
 
 class SimilarityPostForm(forms.ModelForm):
@@ -21,7 +21,7 @@ class SimilarityPostForm(forms.ModelForm):
     """
     
     class Meta:
-        model = SimilarityPost  # 폼이 연결된 모델 설정
+        model = SimilarityPostModel  # 폼이 연결된 모델 설정
         fields = ['subject', 'content', 'image1', 'image2']  # 사용할 필드 지정
         labels = {
             'subject': '제목',
@@ -78,7 +78,7 @@ class DetectionPostForm(forms.ModelForm):
     """
     
     class Meta:
-        model = DetectionPost  # 폼이 연결된 모델 설정
+        model = DetectionPostModel  # 폼이 연결된 모델 설정
         fields = ['subject', 'content', 'image1']  # 사용할 필드 지정
         labels = {
             'subject': '제목',  # 라벨: 'subject' 필드는 "제목"으로 표시됨
@@ -106,7 +106,7 @@ class DetectionCommentForm(forms.ModelForm):
     """
     
     class Meta:
-        model = DetectionComment  # 폼이 연결된 모델 설정
+        model = DetectionCommentModel  # 폼이 연결된 모델 설정
         fields = ['content', 'image1']  # 사용할 필드 지정
         labels = {
             'content': '댓글내용',  # 라벨: 'content' 필드는 "댓글내용"으로 표시됨

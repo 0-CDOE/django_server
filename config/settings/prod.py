@@ -31,7 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('MYSQL_DATABASE'),
+        'NAME': env('MYSQL_NAME'),
         'USER': env('MYSQL_USER'),
         'PASSWORD': env('MYSQL_PASSWORD'),
         'HOST': env('MYSQL_HOST'),

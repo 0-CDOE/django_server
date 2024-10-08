@@ -340,10 +340,18 @@ class BaseCreateView(BaseFormMixin, CreateView):
         
         messages.success(self.request, '성공적으로 작성되었습니다.', extra_tags=extra_tags)
         
-        # 댓글인 경우 해당 위치로 이동하도록 앵커 추가
+        # 리다이렉트 URL 처리
         if hasattr(obj, 'post'):
-            return redirect(f"{reverse(self.success_url, kwargs={'pk': obj.post.pk})}#comment-{obj.pk}")
-        return redirect(reverse(self.success_url, kwargs={'pk': obj.pk}))
+            # 댓글이면 댓글의 위치로 이동
+            success_url = f"{reverse(self.success_url, kwargs={'pk': obj.post.pk})}#comment-{obj.pk}"
+        elif 'list' in self.success_url:
+            # 리스트 URL이면 단순 리다이렉트
+            success_url = self.success_url
+        else:
+            # 게시글이면 상세 페이지로 이동
+            success_url = reverse(self.success_url, kwargs={'pk': obj.pk})
+
+        return redirect(success_url)
 
 
 class BaseReadView(DetailView):
@@ -658,4 +666,3 @@ class BaseVoteView(LoginRequiredMixin, RedirectView):
         if hasattr(obj, 'post'):
             return f"{reverse(self.success_url, kwargs={'pk': obj.post.pk})}#comment-{obj.pk}"
         return reverse(self.success_url, kwargs={'pk': obj.pk})
-

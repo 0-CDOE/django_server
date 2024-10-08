@@ -92,7 +92,7 @@ class AbstractComment(models.Model):
         return f"댓글: {self.content[:20]}"  # 댓글 내용의 앞 20자를 반환
 
 
-class SimilarityPost(AbstractPost):
+class SimilarityPostModel(AbstractPost):
     """
     얼굴 유사도 비교 게시판의 게시글 모델입니다.
 
@@ -137,7 +137,7 @@ class SimilarityComment(AbstractComment):
         댓글에 첨부된 두 번째 이미지.
     """
     
-    post = models.ForeignKey(SimilarityPost, on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(SimilarityPostModel, on_delete=models.CASCADE, related_name='comments')
     image1 = models.ImageField(upload_to='similarity/a_image1/', null=True, blank=True, verbose_name='a_image1')
     image2 = models.ImageField(upload_to='similarity/a_image2/', null=True, blank=True, verbose_name='a_image2')
 
@@ -153,7 +153,7 @@ class SimilarityComment(AbstractComment):
         return f"댓글: {self.content[:20]}"
 
 
-class DetectionPost(AbstractPost):
+class DetectionPostModel(AbstractPost):
     """
     특정 인물 찾기 게시판의 게시글 모델입니다.
 
@@ -179,7 +179,7 @@ class DetectionPost(AbstractPost):
         return f"질문: {self.subject}"
 
 
-class DetectionComment(AbstractComment):
+class DetectionCommentModel(AbstractComment):
     """
     특정 인물 찾기 게시판의 댓글 모델입니다.
 
@@ -193,7 +193,7 @@ class DetectionComment(AbstractComment):
         댓글에 첨부된 이미지.
     """
     
-    post = models.ForeignKey(DetectionPost, on_delete=models.CASCADE, related_name='comments')
+    post = models.ForeignKey(DetectionPostModel, on_delete=models.CASCADE, related_name='comments')
     image1 = models.ImageField(upload_to='detection/a_image1/', null=True, blank=True, verbose_name='a_image1')
 
     def __str__(self) -> str:

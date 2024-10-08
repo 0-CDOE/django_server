@@ -1,5 +1,5 @@
 from .base_views import BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
-from ..models import DetectionComment, DetectionPost
+from ..models import DetectionCommentModel, DetectionPostModel
 from ..forms import DetectionCommentForm
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
@@ -79,7 +79,7 @@ class DetectionCommentCreateView(DetectionCommentExtraContextMixin, BaseCreateVi
         폼이 유효한 경우 댓글을 작성하고 저장합니다.
     """
     
-    model = DetectionComment  # 사용할 댓글 모델 설정
+    model = DetectionCommentModel  # 사용할 댓글 모델 설정
     form_class = DetectionCommentForm  # 댓글 작성 폼 클래스 설정
     success_url = read_url  # 댓글 작성 후 이동할 URL 설정
 
@@ -100,7 +100,7 @@ class DetectionCommentCreateView(DetectionCommentExtraContextMixin, BaseCreateVi
             작성된 댓글이 포함된 게시글 상세 페이지로 리다이렉트됩니다.
         """
         comment = form.instance  # 폼 인스턴스에서 댓글 객체 가져오기
-        comment.post = get_object_or_404(DetectionPost, pk=self.kwargs['pk'])  # 댓글이 달릴 게시글 찾기
+        comment.post = get_object_or_404(DetectionPostModel, pk=self.kwargs['pk'])  # 댓글이 달릴 게시글 찾기
 
         response = super().form_valid(form)  # 상위 클래스의 form_valid 호출
         messages.success(self.request, '댓글이 성공적으로 작성되었습니다.', extra_tags='comment')  # 성공 메시지 표시
@@ -127,7 +127,7 @@ class DetectionCommentUpdateView(BaseUpdateView):
         댓글 수정 후 이동할 URL입니다.
     """
     
-    model = DetectionComment  # 사용할 댓글 모델 설정
+    model = DetectionCommentModel  # 사용할 댓글 모델 설정
     form_class = DetectionCommentForm  # 댓글 수정 폼 클래스 설정
     template_name = 'pybo/answer_form.html'  # 사용할 템플릿 파일 경로 설정
     success_url = read_url  # 댓글 수정 후 이동할 URL 설정
@@ -146,7 +146,7 @@ class DetectionCommentDeleteView(BaseDeleteView):
         댓글 삭제 후 이동할 URL입니다.
     """
     
-    model = DetectionComment  # 사용할 댓글 모델 설정
+    model = DetectionCommentModel  # 사용할 댓글 모델 설정
     success_url = read_url  # 댓글 삭제 후 이동할 URL 설정
 
 
@@ -163,7 +163,7 @@ class DetectionCommentVoteView(BaseVoteView):
         추천 후 이동할 URL입니다.
     """
     
-    model = DetectionComment  # 사용할 댓글 모델 설정
+    model = DetectionCommentModel  # 사용할 댓글 모델 설정
     success_url = read_url  # 추천 후 이동할 URL 설정
 
 
@@ -187,11 +187,11 @@ def create_initial_ai_comment2(post_id: int) -> None:
     """
     
     from django.contrib.auth.models import User
-    from ..models import DetectionPost, DetectionComment
+    from ..models import DetectionPostModel, DetectionCommentModel
 
     logger.info(f"초기 AI 답변 생성 - 게시글 ID: {post_id}")
 
-    post = get_object_or_404(DetectionPost, pk=post_id)  # 게시글 조회
+    post = get_object_or_404(DetectionPostModel, pk=post_id)  # 게시글 조회
 
     try:
         ai_user = User.objects.get(username='AI')  # AI 사용자 계정 조회
@@ -200,7 +200,7 @@ def create_initial_ai_comment2(post_id: int) -> None:
         return
 
     # AI가 작성한 초기 답변 생성
-    comment = DetectionComment(
+    comment = DetectionCommentModel(
         author=ai_user,
         post=post,
         content="AI가 처리 중입니다.",
@@ -234,19 +234,19 @@ def detect_president(comment_id: int, post_id: int) -> None:
     None
     """
     
-    from ..models import DetectionPost, DetectionComment
-    from .ai import process_image2
+    from ..models import DetectionPostModel, DetectionCommentModel
+    from .ai import detect_president
 
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
-    comment = get_object_or_404(DetectionComment, pk=comment_id)  # 댓글 조회
-    post = get_object_or_404(DetectionPost, pk=post_id)  # 게시글 조회
+    comment = get_object_or_404(DetectionCommentModel, pk=comment_id)  # 댓글 조회
+    post = get_object_or_404(DetectionPostModel, pk=post_id)  # 게시글 조회
 
     image_path = post.image1.path  # 게시글에 첨부된 이미지 경로 조회
 
     try:
         # AI로 이미지 처리 후 결과 이미지 경로 저장
-        result_image_path = process_image2(image_path)
+        result_image_path = detect_president(image_path)
         comment.content = (
             "이 사진 속 인물은 도널드 트럼프(Donald Trump)입니다. "
             "그는 미국의 제45대 대통령으로 2017년부터 2021년까지 재임했으며, "

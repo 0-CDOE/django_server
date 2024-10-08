@@ -1,5 +1,5 @@
 from .base_views import BaseListView, BaseReadView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
-from ..models import DetectionPost
+from ..models import DetectionPostModel
 from ..forms import DetectionPostForm, DetectionCommentForm
 from .detection_comment_views import create_initial_ai_comment2
 
@@ -70,7 +70,7 @@ class DetectionPostListView(DetectionPostExtraContextMixin, BaseListView):
         검색할 필드를 지정합니다.
     """
     
-    model = DetectionPost  # 사용할 모델 설정
+    model = DetectionPostModel  # 사용할 모델 설정
     template_name = 'pybo/question_list.html'  # 사용할 템플릿 파일 설정
     search_fields = ['subject', 'content', 'author__username']  # 검색 가능한 필드 설정
 
@@ -88,7 +88,7 @@ class DetectionPostReadView(DetectionPostExtraContextMixin, BaseReadView):
         사용할 템플릿 파일 경로입니다.
     """
     
-    model = DetectionPost  # 사용할 모델 설정
+    model = DetectionPostModel  # 사용할 모델 설정
     template_name = 'pybo/question_detail.html'  # 사용할 템플릿 파일 설정
 
 
@@ -118,7 +118,7 @@ class DetectionPostCreateView(DetectionPostExtraContextMixin, BaseCreateView):
         폼이 유효한 경우 AI 처리 로직을 실행하고 게시글을 저장합니다.
     """
 
-    model = DetectionPost  # 사용할 모델 설정
+    model = DetectionPostModel  # 사용할 모델 설정
     form_class = DetectionPostForm  # 게시글 작성 폼 클래스 설정
     success_url = read_url  # 게시글 작성 후 이동할 URL 설정
     template_name = 'pybo/question_form.html'  # 사용할 템플릿 파일 설정
@@ -173,7 +173,7 @@ class DetectionPostUpdateView(DetectionPostExtraContextMixin, BaseUpdateView):
         사용할 템플릿 파일 경로입니다.
     """
     
-    model = DetectionPost  # 사용할 모델 설정
+    model = DetectionPostModel  # 사용할 모델 설정
     form_class = DetectionPostForm  # 게시글 수정 폼 클래스 설정
     success_url = read_url  # 게시글 수정 후 이동할 URL 설정
     template_name = 'pybo/question_form.html'  # 사용할 템플릿 파일 설정
@@ -192,7 +192,7 @@ class DetectionPostDeleteView(DetectionPostExtraContextMixin, BaseDeleteView):
         게시글 삭제 후 이동할 URL입니다.
     """
     
-    model = DetectionPost  # 사용할 모델 설정
+    model = DetectionPostModel  # 사용할 모델 설정
     success_url = list_url  # 게시글 삭제 후 이동할 URL 설정
 
 
@@ -209,5 +209,5 @@ class DetectionPostVoteView(DetectionPostExtraContextMixin, BaseVoteView):
         추천 후 이동할 URL입니다.
     """
     
-    model = DetectionPost  # 사용할 모델 설정
+    model = DetectionPostModel  # 사용할 모델 설정
     success_url = read_url  # 추천 후 이동할 URL 설정
