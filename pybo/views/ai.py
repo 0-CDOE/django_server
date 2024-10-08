@@ -173,4 +173,7 @@ def detect_president(image_path: str, selected_detectors: list = ['yolo']) -> st
 
     # 처리된 이미지의 경로 반환
     output_image_path = data.output_image_path
-    return output_image_path
+    
+    # 서버에서 템플릿 렌더링시 사용할 상대 경로 반환
+    delete_path = os.path.join(settings.BASE_DIR, 'media')
+    return output_image_path.replace(delete_path, '')
