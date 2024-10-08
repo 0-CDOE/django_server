@@ -238,11 +238,7 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     """
     
     from ..models import SimilarityPostModel, SimilarityComment
-    from .ai import compare_faces
     import httpx
-    import base64
-    import os.path
-    from django.conf import settings
     import mimetypes
     
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")

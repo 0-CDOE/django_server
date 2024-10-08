@@ -254,7 +254,6 @@ def detect_president(comment_id: int, post_id: int) -> None:
                 files = {'file': f}
                 response = client.post("http://52.78.102.210:8007/process_ai_image/", files=files)
                 
-        print("response code : ===========", response.status_code)
 
         django_dir = settings.BASE_DIR
         
@@ -270,7 +269,7 @@ def detect_president(comment_id: int, post_id: int) -> None:
 
             decode_image = base64.b64decode(result_image)
             results_folder = os.path.join(django_dir,result_image_path)
-
+            print(f'================: {results_folder}')
             with open(results_folder,'wb') as out_file:
                 out_file.write(decode_image)
 
