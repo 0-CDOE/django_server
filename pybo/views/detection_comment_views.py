@@ -277,7 +277,13 @@ def detect_president(comment_id: int, post_id: int) -> None:
             comment.save()
 
             logger.info(f"AI 처리 완료 - Board:{board_name} ID: {post_id}")
-
+            
+        else:
+            comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
+            
+        comment.modify_date = timezone.now()  # 댓글 수정 날짜 갱신
+        comment.save()
+        
     except Exception as e:
         # AI 처리 실패 시 예외 처리
         logger.exception(f"AI 처리 실패 - Board:{board_name} ID: {post_id}")

@@ -31,10 +31,10 @@ SECRET_KEY = env('SECRET_KEY')
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('MYSQL_NAME'),
-        'USER': env('MYSQL_USER'),
-        'PASSWORD': env('MYSQL_PASSWORD'),
-        'HOST': env('MYSQL_HOST'),
-        'PORT': env('MYSQL_PORT'),
+        'NAME': 'pyboDB',
+        'USER': 'AdminParkDB',
+        'PASSWORD': 'alrk08642',
+        'HOST': 'ls-2a4d43344121d1c3ef988f7729390afcdaaf899d.ch42m0omuy1q.ap-northeast-2.rds.amazonaws.com',
+        'PORT': '3306',
     }
 }
