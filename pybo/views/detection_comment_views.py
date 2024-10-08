@@ -255,9 +255,11 @@ def detect_president(comment_id: int, post_id: int) -> None:
             if platform.system() == "Windows":
                 # 윈도우일 경우
                 result_image_path = os.path.join('media', str_path.split('media\\', 1)[-1])
+                db_path = str_path.split('media\\', 1)[-1]
             else:
                 # 우분투일 경우
                 result_image_path = os.path.join('media', str_path.split('media/', 1)[-1])
+                db_path = str_path.split('media/', 1)[-1]
 
             # 받은 이미지를 디코딩 후 저장
             result_image = data['base64_image']
@@ -265,13 +267,13 @@ def detect_president(comment_id: int, post_id: int) -> None:
 
             decode_image = base64.b64decode(result_image)
             results_folder = os.path.join(django_dir, result_image_path)
-            print(f'================: {results_folder}')
+
             with open(results_folder, 'wb') as out_file:
                 out_file.write(decode_image)
 
             # AI로 이미지 처리 후 결과 이미지 경로 저장
             comment.content = result_text
-            comment.image1 = result_image_path  # 처리된 이미지 경로 저장
+            comment.image1 = db_path  # 처리된 이미지 경로 저장
             comment.save()
 
             logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
