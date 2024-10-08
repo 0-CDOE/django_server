@@ -1,4 +1,4 @@
-# main.py
+# ai.py
 import logging
 import os
 from django.conf import settings  # settings.py 파일의 설정을 사용하기 위한 임포트

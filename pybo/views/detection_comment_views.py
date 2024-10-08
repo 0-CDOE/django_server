@@ -189,7 +189,7 @@ def create_initial_ai_comment2(post_id: int) -> None:
     from django.contrib.auth.models import User
     from ..models import DetectionPostModel, DetectionCommentModel
 
-    logger.info(f"초기 AI 답변 생성 - 게시글 ID: {post_id}")
+    logger.info(f"초기 AI 답변 생성 - Board:{board_name} ID: {post_id}")
 
     post = get_object_or_404(DetectionPostModel, pk=post_id)  # 게시글 조회
 
@@ -230,7 +230,7 @@ def detect_president(comment_id: int, post_id: int) -> None:
     import platform
     
 
-    logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
+    logger.info(f"AI 처리 중 - Board:{board_name} ID: {post_id}")
 
     comment = get_object_or_404(DetectionCommentModel, pk=comment_id)  # 댓글 조회
     post = get_object_or_404(DetectionPostModel, pk=post_id)  # 게시글 조회
@@ -276,11 +276,11 @@ def detect_president(comment_id: int, post_id: int) -> None:
             comment.image1 = db_path  # 처리된 이미지 경로 저장
             comment.save()
 
-            logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
+            logger.info(f"AI 처리 완료 - Board:{board_name} ID: {post_id}")
 
     except Exception as e:
         # AI 처리 실패 시 예외 처리
-        logger.exception(f"AI 처리 실패 - 게시글 ID: {post_id}")
+        logger.exception(f"AI 처리 실패 - Board:{board_name} ID: {post_id}")
         comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."
         comment.modify_date = timezone.now()  # 댓글 수정 날짜 갱신
         comment.save()

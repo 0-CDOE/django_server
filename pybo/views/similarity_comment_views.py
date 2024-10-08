@@ -192,7 +192,7 @@ def create_initial_ai_comment(post_id: int) -> None:
     from django.contrib.auth.models import User
     from ..models import SimilarityPostModel, SimilarityComment
 
-    logger.info(f"초기 AI 댓글 생성 - 게시글 ID: {post_id}")
+    logger.info(f"초기 AI 댓글 생성 - Board:{board_name} ID: {post_id}")
 
     post = get_object_or_404(SimilarityPostModel, pk=post_id)  # 게시글 조회
 
@@ -245,7 +245,7 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     import os
     import platform
     
-    logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
+    logger.info(f"AI 처리 중 - Board:{board_name} ID: {post_id}")
 
     # 댓글 및 게시글 조회
     comment = get_object_or_404(SimilarityComment, pk=comment_id)  # 댓글 조회
@@ -287,18 +287,18 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
             comment.content = result.get('result', 'AI 처리 결과가 없습니다.')
             comment.save()
 
-            logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
+            logger.info(f"AI 처리 완료 - Board:{board_name} ID: {post_id}")
 
     except ValueError as e:
         # 얼굴 유사도 계산 중 문제가 발생했을 경우 예외 처리
-        logger.exception(f"얼굴 유사도 비교 실패 - 게시글 ID: {post_id}")
+        logger.exception(f"AI 처리 실패 - Board:{board_name} ID: {post_id}")
         comment.content = str(e)  # 예외 메시지를 댓글 내용으로 저장
         comment.modify_date = timezone.now()  # 수정 날짜 업데이트
         comment.save()
         
     except Exception as e:
         # 기타 AI 처리 실패 시 예외 처리
-        logger.exception(f"AI 처리 실패 - 게시글 ID: {post_id}")
+        logger.exception(f"AI 처리 실패 - Board:{board_name} ID: {post_id}")
         comment.content = "AI 처리 중 오류가 발생했습니다. 다시 시도해 주세요."  # 오류 메시지 저장
         comment.modify_date = timezone.now()  # 수정 날짜 업데이트
         comment.save()

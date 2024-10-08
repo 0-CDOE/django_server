@@ -402,12 +402,15 @@ class BaseReadView(DetailView):
         dict
             템플릿에 전달할 추가적인 데이터를 포함한 컨텍스트 딕셔너리입니다.
         """
+        from pybo.models import User  # User 모델 가져오기
+        
         context = super().get_context_data(**kwargs)  # 부모 클래스의 get_context_data 호출
         post = self.get_object()  # 현재 게시글 가져오기
         comments = post.comments.all()  # 게시글에 달린 모든 댓글 가져오기
 
         # 작성자가 현재 사용자인지 여부와 댓글 정보 추가
         context['is_author'] = self.request.user == post.author
+        context['is_superuser'] = self.request.user == User.objects.get(username='AI')
         
         # 댓글 및 메시지 처리
         context['processed_comments'] = self._process_comments(comments)
