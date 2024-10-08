@@ -236,7 +236,11 @@ def detect_president(comment_id: int, post_id: int) -> None:
     
     from ..models import DetectionPostModel, DetectionCommentModel
     from .ai import detect_president
-
+    import httpx
+    import base64
+    import os.path
+    from django.conf import settings
+    
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
     comment = get_object_or_404(DetectionCommentModel, pk=comment_id)  # 댓글 조회
@@ -245,16 +249,34 @@ def detect_president(comment_id: int, post_id: int) -> None:
     image_path = post.image1.path  # 게시글에 첨부된 이미지 경로 조회
 
     try:
+        with httpx.Client(timeout=httpx.Timeout(30.0)) as client:
+            with open(image_path, 'rb') as f:
+                files = {'file': f}
+                response = client.post("http://52.78.102.210:8007/process_ai_image/", files=files)
+                
+        print("response code : ===========", response.status_code)
+
+        django_dir = settings.BASE_DIR
+        
+        if response.status_code == 200:  # ok
+            data = response.json()
+
+            #서버가 ubuntu이면 \가 path여서 문제 발생
+            str_path = data['image_path'].replace("/","\\")
+
+            result_image = data['base64_image']
+            result_text  = data['message']
+            result_image_path = "media\\" + str_path.split("media\\",1)[-1]
+
+            decode_image = base64.b64decode(result_image)
+            results_folder = os.path.join(django_dir,result_image_path)
+
+            with open(results_folder,'wb') as out_file:
+                out_file.write(decode_image)
+
         # AI로 이미지 처리 후 결과 이미지 경로 저장
-        result_image_path = detect_president(image_path)
-        comment.content = (
-            "이 사진 속 인물은 도널드 트럼프(Donald Trump)입니다. "
-            "그는 미국의 제45대 대통령으로 2017년부터 2021년까지 재임했으며, "
-            "정치인이기 이전에는 부동산 개발업자이자 TV 방송인으로도 유명했습니다. "
-            "트럼프는 2016년 대통령 선거에서 공화당 후보로 출마해 승리했으며, "
-            "재임 중에는 ‘미국 우선주의’를 내세워 보호무역, 이민 제한, 세금 감면 등의 정책을 추진했습니다."
-        )
-        comment.image1 = result_image_path  # 처리된 이미지 경로 저장
+        comment.content = result_text
+        comment.image1 = str_path.split("media\\",1)[-1]  # 처리된 이미지 경로 저장
         comment.save()
 
         logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")

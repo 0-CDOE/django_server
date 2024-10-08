@@ -239,7 +239,12 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     
     from ..models import SimilarityPostModel, SimilarityComment
     from .ai import compare_faces
-
+    import httpx
+    import base64
+    import os.path
+    from django.conf import settings
+    import mimetypes
+    
     logger.info(f"AI 처리 중 - 게시글 ID: {post_id}")
 
     comment = get_object_or_404(SimilarityComment, pk=comment_id)  # 댓글 조회
@@ -248,21 +253,21 @@ def schedule_ai_comment_update(comment_id: int, post_id: int) -> None:
     image1_path = post.image1.path  # 첫 번째 이미지 경로
     image2_path = post.image2.path  # 두 번째 이미지 경로
 
+    img1_type = mimetypes.guess_type(image1_path)
+    img2_type = mimetypes.guess_type(image2_path)
+    
     try:
-        # AI 모델을 이용한 얼굴 유사도 비교 수행
-        similarity_percent = compare_faces(image1_path, image2_path)
+
+        with httpx.Client(timeout=httpx.Timeout(30.0)) as client:
+            with open(image1_path, 'rb') as f1, open(image2_path,'rb') as f2:
+                response = client.post("http://52.78.102.210:8007/process_ai_image_two/",
+                                    files={'file1':(image1_path,f1,img1_type[0]),'file2':(image2_path,f2,img2_type[0])})
         
-        # AI 처리 결과를 댓글 내용으로 업데이트
-        comment.content = f"""
-당신의 얼굴은 **도널드 트럼프**와 **{similarity_percent:.2f}%**만큼 유사합니다!
-
-트럼프는 강력한 리더십과 자신감을 상징하는 인물로, 중요한 순간마다 결단력을 보여주었습니다.  
-당신도 이러한 유사성을 통해 **리더십**과 **결단력**이라는 중요한 특성을 공유하고 있을 가능성이 큽니다.
-
-이 유사성은 단순한 외모를 넘어서, 당신이 가진 독창적이고 강한 의지를 반영하는 부분입니다.  
-트럼프처럼 도전에 맞서고 목표를 위해 나아가는 모습에서 공통점을 찾을 수 있습니다.
-"""
-        comment.save()  # 댓글 저장
+        if response.status_code ==200:
+            result = response.json()
+            
+        comment.content = result['result']
+        comment.save()
 
         logger.info(f"AI 처리 완료 - 댓글 ID: {comment.id}")
 
