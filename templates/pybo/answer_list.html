@@ -81,12 +81,36 @@
 
                 {# 댓글 수정 폼 (처음에는 숨겨져 있으며, 수정 버튼 클릭 시 나타납니다.) #}
                 <div class="edit-form-container" id="edit-form-{{ comment.id }}" style="display: none;">
-                    <form method="post" action="{% url_byME 'comment' 'update' comment_id=comment.id %}">
+                    <form method="post" enctype="multipart/form-data" action="{% url_byME 'comment' 'update' comment_id=comment.id %}">
                         {% csrf_token %}
+                        
                         <div class="mb-3">
                             <label for="edit-content-{{ comment.id }}" class="form-label">답변 수정</label>
                             <textarea name="content" id="edit-content-{{ comment.id }}" class="form-control">{{ comment.content }}</textarea>
+                            
+                            {# 댓글 수정 시 발생한 오류 메시지 표시 #}
+                            {% if comment_form.content.errors %}
+                                <div class="invalid-feedback">
+                                    {{ comment_form.content.errors }}
+                                </div>
+                            {% endif %}
                         </div>
+
+                        {# 수정 시에도 이미지 업로드 필드를 추가합니다. #}
+                        {% if is_superuser %}
+                            <div class="mb-3">
+                                <label for="edit-image1-{{ comment.id }}" class="form-label">이미지 수정</label>
+                                <input type="file" name="image1" id="edit-image1-{{ comment.id }}" class="form-control">
+                                
+                                {# 이미지 수정 시 발생한 오류 메시지 표시 #}
+                                {% if comment_form.image1.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ comment_form.image1.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+
                         <button type="submit" class="btn btn-primary">수정 완료</button>
                         <button type="button" class="btn btn-secondary cancel-edit" data-comment-id="{{ comment.id }}">취소</button>
                     </form>

@@ -241,7 +241,7 @@ def detect_president(comment_id: int, post_id: int) -> None:
         with httpx.Client(timeout=httpx.Timeout(30.0)) as client:
             with open(image_path, 'rb') as f:
                 files = {'file': f}
-                response = client.post("http://52.78.102.210:8007/process_ai_image/", files=files)
+                response = client.post("http://127.0.0.1:8002/process_ai_image/", files=files)
 
         django_dir = settings.BASE_DIR
 
