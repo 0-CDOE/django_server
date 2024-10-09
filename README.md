@@ -90,7 +90,7 @@
 
 ### common
 
-| URL             | Views Function        | HTML File Name  | Note         |
+| URL             | View                  | HTML File Name  | Note         |
 |-----------------|-----------------------|-----------------|--------------|
 | `/`             | IndexView             | `index.html`    | 인덱스 화면  |
 | `login`         | CustomLoginView       | `login.html`    | 로그인       |
