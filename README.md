@@ -427,6 +427,8 @@ erDiagram
     SIMILARITY_COMMENT ||--o{ SIMILARITY_COMMENT_VOTER : recommend
 ```
 
+<img src="erd.png" width="100%">
+
 ## 8. Architecture
 
 - 시스템 설계
@@ -644,7 +646,7 @@ classDiagram
         +form_class: NotImplemented
         +template_name: str
         +get_context_data(**kwargs) dict
-        +_save_uploaded_images(obj)
+        -_save_uploaded_images(obj)
         +form_valid(form) obj
     }
     class IndexView {
@@ -671,8 +673,8 @@ classDiagram
         +template_name: str
         +context_object_name: str
         +get_context_data(**kwargs) dict
-        +_process_comments(comments) list
-        +_get_comment_messages(comments) dict
+        -_process_comments(comments) list
+        -_get_comment_messages(comments) dict
     }
     class BaseCreateView {
         +form_valid(form) HttpResponseRedirect
@@ -793,24 +795,24 @@ classDiagram
         +get_context_data(**kwargs) dict
     }
     class SimilarityCommentCreateView {
+        +model: SimilarityCommentModel
+        +form_class: SimilarityCommentForm
+        +success_url: str
         +form_valid(form) Response
-        -model: SimilarityCommentModel
-        -form_class: SimilarityCommentForm
-        -success_url: str
     }
     class SimilarityCommentUpdateView {
-        -model: SimilarityCommentModel
-        -form_class: SimilarityCommentForm
-        -template_name: str
-        -success_url: str
+        +model: SimilarityCommentModel
+        +form_class: SimilarityCommentForm
+        +template_name: str
+        +success_url: str
     }
     class SimilarityCommentDeleteView {
-        -model: SimilarityCommentModel
-        -success_url: str
+        +model: SimilarityCommentModel
+        +success_url: str
     }
     class SimilarityCommentVoteView {
-        -model: SimilarityCommentModel
-        -success_url: str
+        +model: SimilarityCommentModel
+        +success_url: str
     }
 ```
 
@@ -859,34 +861,34 @@ classDiagram
         +get_context_data(**kwargs) dict
     }
     class DetectionPostListView {
-        -model: DetectionPostModel
-        -template_name: str
-        -search_fields: list
+        +model: DetectionPostModel
+        +template_name: str
+        +search_fields: list
     }
     class DetectionPostReadView {
-        -model: DetectionPostModel
-        -template_name: str
+        +model: DetectionPostModel
+        +template_name: str
     }
     class DetectionPostCreateView {
-        -model: DetectionPostModel
-        -form_class: DetectionPostForm
-        -success_url: str
-        -template_name: str
+        +model: DetectionPostModel
+        +form_class: DetectionPostForm
+        +success_url: str
+        +template_name: str
         +form_valid(form)
     }
     class DetectionPostUpdateView {
-        -model: DetectionPostModel
-        -form_class: DetectionPostForm
-        -success_url: str
-        -template_name: str
+        +model: DetectionPostModel
+        +form_class: DetectionPostForm
+        +success_url: str
+        +template_name: str
     }
     class DetectionPostDeleteView {
-        -model: DetectionPostModel
-        -success_url: str
+        +model: DetectionPostModel
+        +success_url: str
     }
     class DetectionPostVoteView {
-        -model: DetectionPostModel
-        -success_url: str
+        +model: DetectionPostModel
+        +success_url: str
     }
 ```
 
@@ -924,24 +926,24 @@ classDiagram
         +get_context_data(**kwargs) dict
     }
     class DetectionCommentCreateView {
-        -model: DetectionCommentModel
-        -form_class: DetectionCommentForm
-        -success_url: str
+        +model: DetectionCommentModel
+        +form_class: DetectionCommentForm
+        +success_url: str
         +form_valid(form) HttpResponseRedirect
     }
     class DetectionCommentUpdateView {
-        -model: DetectionCommentModel
-        -form_class: DetectionCommentForm
-        -template_name: str
-        -success_url: str
+        +model: DetectionCommentModel
+        +form_class: DetectionCommentForm
+        +template_name: str
+        +success_url: str
     }
     class DetectionCommentDeleteView {
-        -model: DetectionCommentModel
-        -success_url: str
+        +model: DetectionCommentModel
+        +success_url: str
     }
     class DetectionCommentVoteView {
-        -model: DetectionCommentModel
-        -success_url: str
+        +model: DetectionCommentModel
+        +success_url: str
     }
 ```
 
