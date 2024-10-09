@@ -100,7 +100,7 @@
 
 ### similarity
 
-| URL                                     | View Function                  | HTML File Name        | Note         |
+| URL                                     | View                           | HTML File Name        | Note         |
 |-----------------------------------------|--------------------------------|-----------------------|--------------|
 | `similarity/post/create/`               | SimilarityPostCreateView       | `question_form.html`  | 게시물 작성  |
 | `similarity/post/read/<int:pk>/`        | SimilarityPostReadView         | `question_list.html`  | 게시물 읽기  |
@@ -115,7 +115,7 @@
 
 ### Detection
 
-| URL                                     | View Function                  | HTML File Name        | Note         |
+| URL                                     | View                           | HTML File Name        | Note         |
 |-----------------------------------------|--------------------------------|-----------------------|--------------|
 | `detection/post/create/`                | DetectionPostCreateView        | `question_form.html`  | 게시물 작성  |
 | `detection/post/read/<int:pk>/`         | DetectionPostReadView          | `question_list.html`  | 게시물 읽기  |
@@ -517,9 +517,9 @@ stateDiagram-v2
     얼굴유사도비교중 --> 정상작동
     얼굴유사도비교중 --> 에러발생
     정상작동 --> 유사도댓글달기
-    에러발생 --> 미발견댓글
+    에러발생 --> 에러댓글
     유사도댓글달기 --> [*]
-    미발견댓글 --> [*]
+    에러댓글 --> [*]
 
 ```
 
@@ -534,11 +534,11 @@ stateDiagram-v2
     대통령찾기중 --> 대통령미발견
     대통령찾기중 --> 에러발생
     대통령발견 --> 바운딩박스이미지댓글
-    대통령미발견 --> 발견댓글
-    에러발생 --> 미발견댓글
+    대통령미발견 --> 미발견댓글
+    에러발생 --> 에러댓글
     바운딩박스이미지댓글 --> [*]
-    발견댓글 --> [*]
     미발견댓글 --> [*]
+    에러댓글 --> [*]
 ```
 
 ## 10. 클래스 다이어 그램
