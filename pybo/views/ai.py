@@ -103,10 +103,11 @@ def compare_faces(image1_path: str, image2_path: str, selected_detectors: list =
     
     # 코사인 유사도 계산
     similarity_score = cosine_similarity(face_encoding1, face_encoding2)
-
-    # 유사도 스코어를 %로 변환 (0 ~ 1 -> 0% ~ 100%)
     similarity_percentage = similarity_score[0][0] * 100
-    
+
+    if similarity_percentage >= 70:
+        similarity_percentage = np.interp(similarity_percentage, [70, 100], [0, 100])
+
     return similarity_percentage
 
 

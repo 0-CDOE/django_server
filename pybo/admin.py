@@ -1,5 +1,5 @@
 from django.contrib import admin
-from pybo.models import SimilarityPostModel, SimilarityComment, DetectionCommentModel, DetectionPostModel
+from pybo.models import SimilarityPostModel, SimilarityCommentModel, DetectionCommentModel, DetectionPostModel
 
 # =============================
 # Admin (관리자 설정)
@@ -19,6 +19,6 @@ class SimilarityPostAdmin(admin.ModelAdmin):
 admin.site.register(SimilarityPostModel, SimilarityPostAdmin)
 
 # 나머지 모델들도 동일한 방식으로 관리자 페이지에 등록할 수 있습니다.
-admin.site.register(SimilarityComment)
+admin.site.register(SimilarityCommentModel)
 admin.site.register(DetectionCommentModel)
 admin.site.register(DetectionPostModel)

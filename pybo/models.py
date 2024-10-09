@@ -121,7 +121,7 @@ class SimilarityPostModel(AbstractPost):
         return f"질문: {self.subject}"
 
 
-class SimilarityComment(AbstractComment):
+class SimilarityCommentModel(AbstractComment):
     """
     얼굴 유사도 비교 게시판의 댓글 모델입니다.
 

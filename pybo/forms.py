@@ -1,5 +1,5 @@
 from django import forms
-from pybo.models import SimilarityPostModel, SimilarityComment, DetectionPostModel, DetectionCommentModel
+from pybo.models import SimilarityPostModel, SimilarityCommentModel, DetectionPostModel, DetectionCommentModel
 
 
 class SimilarityPostForm(forms.ModelForm):
@@ -50,7 +50,7 @@ class SimilarityCommentForm(forms.ModelForm):
     """
     
     class Meta:
-        model = SimilarityComment  # 폼이 연결된 모델 설정
+        model = SimilarityCommentModel  # 폼이 연결된 모델 설정
         fields = ['content', 'image1', 'image2']  # 사용할 필드 지정
         labels = {
             'content': '답변내용',  # 라벨: 'content' 필드는 "답변내용"으로 표시됨

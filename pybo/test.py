@@ -5,17 +5,17 @@ class URLPatternTest(TestCase):
     """
     URL 패턴을 테스트하는 클래스입니다.
     
-    Django 프로젝트의 URL 패턴을 순회하면서 각 패턴의 경로와 이름을 출력하는 테스트입니다.
+    Django 프로젝트의 URL 패턴을 순회하면서 각 패턴의 경로, 이름, 그리고 연결된 View 클래스를 출력하는 테스트입니다.
     
     Methods
     -------
     test_url_patterns():
-        urlpatterns 리스트에 정의된 각 URL 패턴을 순회하면서 경로와 이름을 출력합니다.
+        urlpatterns 리스트에 정의된 각 URL 패턴을 순회하면서 경로, 이름, 연결된 View 클래스를 출력합니다.
     """
     
     def test_url_patterns(self):
         """
-        urlpatterns 리스트에 정의된 URL 패턴을 순회하면서 각 패턴의 경로와 이름을 출력합니다.
+        urlpatterns 리스트에 정의된 URL 패턴을 순회하면서 각 패턴의 경로, 이름, 연결된 View 클래스를 출력합니다.
 
         Parameters
         ----------
@@ -33,7 +33,8 @@ class URLPatternTest(TestCase):
         for pattern in urlpatterns:
             try:
                 # URL 패턴의 경로와 이름을 출력
-                print(f'URL Pattern: {pattern.pattern} | Name: {pattern.name}')
+                view_name = pattern.callback.view_class.__name__ if hasattr(pattern.callback, 'view_class') else pattern.callback.__name__
+                print(f'URL Pattern: {pattern.pattern} | URL_Name: {pattern.name} | View: {view_name}')
             except AttributeError:
                 # 만약 패턴에 .pattern이나 .name 속성이 없는 경우 예외 처리
                 print(f'Invalid pattern: {pattern}')

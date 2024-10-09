@@ -21,7 +21,7 @@ end_point = URLS['CRUD_AND_MORE']
 read_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["read"]}'
 
 
-class DetectionCommentExtraContextMixin(BaseExtraContextMixin):
+class DetectionExtraContextMixin(BaseExtraContextMixin):
     """
     모든 댓글 관련 뷰에서 공통적으로 사용할 추가 데이터를 설정하는 Mixin입니다.
 
@@ -58,7 +58,7 @@ class DetectionCommentExtraContextMixin(BaseExtraContextMixin):
         return context
 
 
-class DetectionCommentCreateView(DetectionCommentExtraContextMixin, BaseCreateView):
+class DetectionCommentCreateView(DetectionExtraContextMixin, BaseCreateView):
     """
     특정 인물 찾기 게시판의 댓글을 작성하는 뷰입니다.
 
@@ -241,7 +241,7 @@ def detect_president(comment_id: int, post_id: int) -> None:
         with httpx.Client(timeout=httpx.Timeout(30.0)) as client:
             with open(image_path, 'rb') as f:
                 files = {'file': f}
-                response = client.post("http://127.0.0.1:8002/process_ai_image/", files=files)
+                response = client.post("http://52.78.102.210:8007/process_ai_image/", files=files)
 
         django_dir = settings.BASE_DIR
 

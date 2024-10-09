@@ -219,7 +219,7 @@ class BaseFormMixin(LoginRequiredMixin, BaseExtraContextMixin):
     """
     
     model = NotImplemented  # 사용할 모델 지정 (하위 클래스에서 설정 필요)
-    form_class = None  # 사용할 폼 클래스 (하위 클래스에서 설정 필요)
+    form_class = NotImplemented  # 사용할 폼 클래스 (하위 클래스에서 설정 필요)
     template_name = None  # 사용할 템플릿 (하위 클래스에서 설정 필요)
 
     def get_context_data(self, **kwargs) -> dict:
@@ -669,3 +669,4 @@ class BaseVoteView(LoginRequiredMixin, RedirectView):
         if hasattr(obj, 'post'):
             return f"{reverse(self.success_url, kwargs={'pk': obj.post.pk})}#comment-{obj.pk}"
         return reverse(self.success_url, kwargs={'pk': obj.pk})
+

@@ -20,7 +20,7 @@ import logging  # 로깅을 위한 모듈
 logger = logging.getLogger(URLS['APP_NAME'])  # 로거 생성
 
 
-class DetectionPostExtraContextMixin(BaseExtraContextMixin):
+class DetectionExtraContextMixin(BaseExtraContextMixin):
     """
     모든 뷰에서 공통적으로 사용할 추가 데이터를 템플릿 컨텍스트에 전달하는 Mixin입니다.
 
@@ -52,7 +52,7 @@ class DetectionPostExtraContextMixin(BaseExtraContextMixin):
         return context
 
 
-class DetectionPostListView(DetectionPostExtraContextMixin, BaseListView):
+class DetectionPostListView(DetectionExtraContextMixin, BaseListView):
     """
     DetectionPostListView 클래스는 특정 인물 찾기 게시판의 게시글 목록을 보여주는 뷰입니다.
 
@@ -75,7 +75,7 @@ class DetectionPostListView(DetectionPostExtraContextMixin, BaseListView):
     search_fields = ['subject', 'content', 'author__username']  # 검색 가능한 필드 설정
 
 
-class DetectionPostReadView(DetectionPostExtraContextMixin, BaseReadView):
+class DetectionPostReadView(DetectionExtraContextMixin, BaseReadView):
     """
     DetectionPostReadView 클래스는 특정 인물 찾기 게시판의 게시글 상세 내용을 보여주는 뷰입니다.
 
@@ -92,7 +92,7 @@ class DetectionPostReadView(DetectionPostExtraContextMixin, BaseReadView):
     template_name = 'pybo/question_detail.html'  # 사용할 템플릿 파일 설정
 
 
-class DetectionPostCreateView(DetectionPostExtraContextMixin, BaseCreateView):
+class DetectionPostCreateView(DetectionExtraContextMixin, BaseCreateView):
     """
     DetectionPostCreateView 클래스는 특정 인물 찾기 게시판의 게시글을 작성하는 뷰입니다.
 
@@ -154,7 +154,7 @@ class DetectionPostCreateView(DetectionPostExtraContextMixin, BaseCreateView):
         return response  # form_valid의 결과 반환
 
 
-class DetectionPostUpdateView(DetectionPostExtraContextMixin, BaseUpdateView):
+class DetectionPostUpdateView(DetectionExtraContextMixin, BaseUpdateView):
     """
     DetectionPostUpdateView 클래스는 특정 인물 찾기 게시판의 게시글을 수정하는 뷰입니다.
 
@@ -179,7 +179,7 @@ class DetectionPostUpdateView(DetectionPostExtraContextMixin, BaseUpdateView):
     template_name = 'pybo/question_form.html'  # 사용할 템플릿 파일 설정
 
 
-class DetectionPostDeleteView(DetectionPostExtraContextMixin, BaseDeleteView):
+class DetectionPostDeleteView(BaseDeleteView):
     """
     DetectionPostDeleteView 클래스는 특정 인물 찾기 게시판의 게시글을 삭제하는 뷰입니다.
 
@@ -196,7 +196,7 @@ class DetectionPostDeleteView(DetectionPostExtraContextMixin, BaseDeleteView):
     success_url = list_url  # 게시글 삭제 후 이동할 URL 설정
 
 
-class DetectionPostVoteView(DetectionPostExtraContextMixin, BaseVoteView):
+class DetectionPostVoteView(BaseVoteView):
     """
     DetectionPostVoteView 클래스는 특정 인물 찾기 게시판의 게시글에 추천 기능을 제공하는 뷰입니다.
 

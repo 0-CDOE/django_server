@@ -185,7 +185,7 @@ class SimilarityPostUpdateView(SimilarityExtraContextMixin, BaseUpdateView):
     template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
 
 
-class SimilarityPostDeleteView(SimilarityExtraContextMixin, BaseDeleteView):
+class SimilarityPostDeleteView(BaseDeleteView):
     """
     유사도 게시판의 게시글을 삭제하는 뷰입니다.
 
@@ -202,7 +202,7 @@ class SimilarityPostDeleteView(SimilarityExtraContextMixin, BaseDeleteView):
     success_url = list_url  # 삭제 후 리다이렉트할 URL
 
 
-class SimilarityPostVoteView(SimilarityExtraContextMixin, BaseVoteView):
+class SimilarityPostVoteView(BaseVoteView):
     """
     유사도 게시판의 게시글에 추천 기능을 제공하는 뷰입니다.
 
