@@ -107,6 +107,7 @@ class SimilarityPostCreateView(SimilarityExtraContextMixin, BaseCreateView):
     model = SimilarityPostModel  # 모델 설정
     form_class = SimilarityPostForm  # 사용할 폼 클래스 설정
     success_url = read_url  # 성공 후 리다이렉트할 URL
+    failure_url = list_url  # 실패 후 리다이렉트할 URL
     template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
 
     def form_valid(self, form):
@@ -137,7 +138,7 @@ class SimilarityPostCreateView(SimilarityExtraContextMixin, BaseCreateView):
             except Exception as e:
                 logger.error(f"AI 처리 실패 - 질문 ID: {post}, 에러: {str(e)}")
         else:
-            messages.error(self.request, '이미지 2장 첨부해주세요.', extra_tags='post')
+            messages.error(self.request, '이미지 2장 첨부하지 않으면 AI 처리가 되지 않습니다.', extra_tags='post')
 
         return response  # 부모 클래스의 form_valid 메서드 결과 반환
 

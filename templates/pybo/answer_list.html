@@ -61,7 +61,7 @@
                         <div class="text-end">
                             <div class="badge bg-light text-dark p-2 text-start">
                                 <div class="mb-2">
-                                    {% if is_superuser %}
+                                    {% if comment.author_username == 'AI' %}
                                         superuser: {{ comment.author_username }}
                                     {% else %}
                                         user name: {{ comment.author_username }}
@@ -164,7 +164,7 @@
     
     <div class="mb-3">
         <label for="id_content" class="form-label">댓글 내용</label>
-        
+
         {# 로그인 여부에 따라 disabled 속성 추가 #}
         {{ comment_form.content|add_class:"form-control" }}
         {% if not user.is_authenticated %}
