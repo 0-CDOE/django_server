@@ -2,15 +2,9 @@ from django import template  # Django 템플릿 라이브러리
 from django.utils.safestring import mark_safe  # 안전한 HTML 문자열로 변환하는 함수
 import markdown  # 마크다운 문자열을 HTML로 변환하기 위한 모듈
 
-# ===============================
-# 템플릿 라이브러리 객체 생성
-# ===============================
 # 템플릿 필터를 등록하기 위한 Library 객체 생성
 register = template.Library()
 
-# ===============================
-# 커스텀 필터: 뺄셈 연산 필터
-# ===============================
 @register.filter
 def sub(value, arg):
     """
@@ -31,9 +25,6 @@ def sub(value, arg):
     except TypeError:
         return 0  # 값이 없을 경우 0을 반환
 
-# ===============================
-# 커스텀 필터: 마크다운 문자열을 HTML로 변환
-# ===============================
 @register.filter
 def md_to_html(value):
     """
@@ -68,9 +59,6 @@ def md_to_html(value):
     # 마크다운을 HTML로 변환하고, 안전한 HTML로 처리하여 반환
     return mark_safe(markdown.markdown(value, extensions=extensions))
 
-# ===============================
-# 커스텀 필터: 필드에 CSS 클래스 추가
-# ===============================
 @register.filter
 def add_class(field, css_class):
     """

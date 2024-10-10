@@ -1,9 +1,8 @@
 from django import template
 from django.urls import reverse
 
-from ..url_patterns import URLS
-
 register = template.Library()
+
 @register.simple_tag(takes_context=True)
 def url_byME(context, content_type, end_point, post_id=None, comment_id=None):
     """
@@ -41,7 +40,6 @@ def url_byME(context, content_type, end_point, post_id=None, comment_id=None):
 
     # 잘못된 content_type 처리
     raise ValueError("Invalid content_type")
-
 
 @register.simple_tag(takes_context=True)
 def board_name_for_user(context):

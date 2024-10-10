@@ -169,7 +169,6 @@ class DetectionCommentVoteView(BaseVoteView):
 
 from background_task import background
 
-
 def create_initial_ai_comment2(post_id: int) -> None:
     """
     AI 처리 중임을 알리는 초기 답변을 생성하는 함수입니다.
@@ -214,8 +213,6 @@ def create_initial_ai_comment2(post_id: int) -> None:
         post_id=post_id,
         schedule=1  # 1초 후 실행 예약
     )
-
-
 
 @background(schedule=1)
 def detect_president(comment_id: int, post_id: int) -> None:

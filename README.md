@@ -53,14 +53,14 @@
 
 ### Frontend
 
-- JS 라이브러리: jQuery
-- CSS 라이브러리: Bootstrap
+- JS Library: jQuery
+- CSS Framework: Bootstrap
 
 ### Backend
 
 - Web Server: NGINX
 - WSGI Server: gunicorn
-- WAS (Python Web Framework): Django
+- WAS (Python Web Framework): Django, DBT, FastAPI
 - DB: PostgreSQL
 
 ### AI 모델 및 데이터 분석
@@ -79,11 +79,11 @@
 
 ## 2.2 배포 URL
 
-- 추후 추가 예정
+- [도메인은 추후 추가 예정](http://3.34.71.98/)
 - 테스트용 계정
   ```
-  id : test@test.test
-  pw : test11!!
+  id : testID
+  pw : 0!Code2024
   ```
 
 ## 2.3 URL 구조 (모놀리식)
@@ -434,6 +434,8 @@ erDiagram
 - 시스템 설계
 
 ```mermaid
+direction LR 
+
 graph TD
     NGINX -->|Forward request| Gunicorn
     Gunicorn -->|Request to WAS| Django
@@ -952,9 +954,9 @@ classDiagram
 
 프로젝트 진행 중 Django 모델의 필드를 업데이트할 때 마이그레이션 에러가 발생했습니다. 특히 기존 필드를 삭제하거나 새로운 필드를 추가할 때 데이터베이스와 모델 간의 불일치가 원인이었습니다. 이를 해결하기 위해 makemigrations와 migrate 명령을 순차적으로 실행하고, 필드 삭제 시 데이터 손실을 방지하기 위해 먼저 필드를 nullable로 설정하는 등 유연한 접근을 시도했습니다. 또한, 데이터베이스 백업을 주기적으로 진행하여 데이터 손실 가능성에 대비했습니다.
 
-2. AI 모델 학습 시 과적합 문제
+2. AI 모델 학습 시 데이터셋 부족 및 구분하지 못하는 문제
 
-얼굴 유사도 분석을 위한 AI 모델을 학습하던 중 과적합 문제가 발생했습니다. 모델이 학습 데이터에 지나치게 맞춰져 테스트 데이터에 대한 성능이 저하되었습니다. 이를 해결하기 위해 데이터 증강(Data Augmentation)을 적용하고, Dropout 레이어를 추가하여 모델의 일반화 성능을 높였습니다. 또한, 학습률을 조정하고 조기 종료(Early Stopping) 기법을 사용해 과적합을 방지했습니다.
+특정 인물 탐지를 위한 AI 모델을 학습하는 과정에서 데이터셋의 부족과 유사한 얼굴 간의 구분 문제가 발생하였습니다. 특히, 두 인물이 부자관계로 인해 얼굴이 매우 유사하여 모델의 탐지 성능이 저하되는 어려움이 있었습니다. 이러한 문제를 해결하기 위해 다음과 같은 접근 방식을 적용하였습니다YOLOv8 전이 학습: 사전 학습된 YOLOv8 모델을 활용하여 전이 학습(Transfer Learning)을 적용함으로써 제한된 데이터셋에서도 높은 성능을 도출하고 학습 속도를 크게 향상시켰습니다. 전이 학습은 기존에 학습된 특성을 재사용하여 데이터셋 부족 문제를 효과적으로 완화할 수 있었습니다. 모델이 더 많은 다양한 상황에서 얼굴을 인식할 수 있도록, 회전, 크기 조정, 밝기 변화 등의 데이터 증강 기법을 적용하여 데이터의 다양성을 극대화했습니다. 이를 통해 데이터셋의 양적, 질적 향상을 도모하였습니다.데이터셋을 k-Fold 교차 검증 기법을 통해 다수의 부분으로 나누고, 각 Fold를 순차적으로 검증 데이터셋으로 활용함으로써 데이터셋의 효율적인 사용을 극대화하였습니다. 이를 통해 데이터셋의 부족 문제를 극복하고, 모델의 일반화 성능을 향상시킬 수 있었습니다.
 
 3. URL 패턴, View, Template 연동 문제
 

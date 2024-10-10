@@ -19,7 +19,10 @@ Topbar 네비게이션 바: 페이지 제목과 유저 정보, 검색 기능 등
         {% endcomment %}
         <div class="page-header">
             {% if board_name %}
-                <a href="{% url_byME 'post' 'list' %}" class="h3 mb-2 text-primary font-weight-bold">{% board_name_for_user %}</a> 
+                <a href="{% url_byME 'post' 'list' %}" 
+                class="h3 mb-2 text-primary font-weight-bold">
+                {% board_name_for_user %}
+                </a> 
                 <p class="mb-4 text-muted">{% board_explanation %}</p>
             {% else %}
                 <h1 class="h3 mb-2 text-primary font-weight-bold">홈페이지</h1> 
