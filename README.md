@@ -434,8 +434,8 @@ erDiagram
 - 시스템 설계
 
 ```mermaid
-graph TD
-    direction LR 
+graph LR
+
     NGINX -->|Forward request| Gunicorn
     Gunicorn -->|Request to WAS| Django
     Django -->|Database request| MySQL
