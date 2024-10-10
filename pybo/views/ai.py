@@ -1,18 +1,20 @@
-# ai.py
+# main.py
+import face_recognition
 import logging
-import os
-from django.conf import settings  # settings.py 파일의 설정을 사용하기 위한 임포트
-from sklearn.metrics.pairwise import cosine_similarity
+import pickle
 import numpy as np
+import os
+from sklearn.metrics.pairwise import cosine_similarity
+import logging  # 로그 출력을 위한 모듈
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# 로그 출력을 위한 모듈 설정
-logger = logging.getLogger('pybo')  # 'pybo'라는 이름의 로거를 생성합니다.
+logger = logging.getLogger('pybo')  # 'pybo'라는 로거 생성
 
 # 각 단계별 클래스를 개별적으로 임포트합니다.
 from ai_system import Pipeline, Data, BaseConfig, steps, factories
 
-
-def process_image(image_path: str, selected_detectors: list) -> tuple:
+def process_image(image_path, selected_detectors):
     """
     이미지를 처리하는 메인 함수입니다. 얼굴을 탐지하고, 인코딩(임베딩)한 결과를 반환합니다.
 
@@ -56,12 +58,11 @@ def process_image(image_path: str, selected_detectors: list) -> tuple:
     pipeline.run(data)
 
     logging.info(f"이미지 처리 완료: {image_path}")
-    
+
     # 처리된 이미지의 경로와 얼굴 인코딩 반환
     output_image_path = data.output_image_path
     encodings = data.encodings
     return output_image_path, encodings
-
 
 def compare_faces(image1_path: str, image2_path: str, selected_detectors: list = ['yolo']) -> float:
     """
@@ -84,7 +85,7 @@ def compare_faces(image1_path: str, image2_path: str, selected_detectors: list =
     logger.info(f"이미지 1 인코딩 중: {image1_path}")
     # 첫 번째 이미지 처리
     _, face_encoding1 = process_image(image1_path, selected_detectors)
-    
+
     logger.info(f"이미지 2 인코딩 중: {image2_path}")
     # 두 번째 이미지 처리
     _, face_encoding2 = process_image(image2_path, selected_detectors)
@@ -100,34 +101,24 @@ def compare_faces(image1_path: str, image2_path: str, selected_detectors: list =
     face_encoding2 = np.array(face_encoding2[0]).reshape(1, -1)
 
     logger.info(f"얼굴 유사도 계산 중: {image1_path}, {image2_path}")
-    
+
     # 코사인 유사도 계산
     similarity_score = cosine_similarity(face_encoding1, face_encoding2)
+
+    # 유사도 스코어를 %로 변환 (0 ~ 1 -> 0% ~ 100%)
     similarity_percentage = similarity_score[0][0] * 100
 
     if similarity_percentage >= 70:
         similarity_percentage = np.interp(similarity_percentage, [70, 100], [0, 100])
 
+
     return similarity_percentage
 
-
 class DetectionConfig(BaseConfig):
-    """
-    DetectionConfig 클래스는 얼굴 탐지 설정 정보를 담고 있습니다.
-
-    Attributes
-    ----------
-    yolo_path : str
-        YOLO 모델 파일 경로입니다.
-    django_dir : str
-        Django 프로젝트의 기본 디렉터리 경로입니다.
-    results_folder : str
-        탐지 결과가 저장될 폴더 경로입니다.
-    """
+    # 별도로 추가할 커스터마이징이 없으면 그대로 사용
     yolo_path = 'yolov8_l_trump.pt'
-    django_dir = settings.BASE_DIR
+    django_dir = BASE_DIR
     results_folder = os.path.join(django_dir, 'media', 'detection', 'a_image1')
-
 
 def detect_president(image_path: str, selected_detectors: list = ['yolo']) -> str:
     """
@@ -174,7 +165,7 @@ def detect_president(image_path: str, selected_detectors: list = ['yolo']) -> st
 
     # 처리된 이미지의 경로 반환
     output_image_path = data.output_image_path
-    
+
     # 서버에서 템플릿 렌더링시 사용할 상대 경로 반환
-    delete_path = os.path.join(settings.BASE_DIR, 'media')
-    return output_image_path.replace(delete_path, '')
+    delete_path = os.path.join(BASE_DIR, 'media')
+    return output_image_path

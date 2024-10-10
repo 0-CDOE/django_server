@@ -441,7 +441,8 @@ graph TD
     Django -->|Database request| MySQL
 
     Django -->|Async image processing request| DBT
-    DBT -->|Send image to FastAPI for AI processing| FastAPI
+    DBT -->|Add background task| DBTWorker
+    DBTWorker -->|Send image to FastAPI for AI processing| FastAPI
     FastAPI -->|AI processing request| AI
     AI -->|Return processed image| FastAPI
     FastAPI -->|Return processed image| Django
@@ -461,10 +462,10 @@ graph TD
     classDef frontend fill:#cfc,stroke:#090,stroke-width:2px
 
     class NGINX,Gunicorn,Django,MySQL server
-    class DBT,FastAPI async
+    class DBT,FastAPI,DBTWorker async
     class AWS cloud
     class Frontend frontend
-    
+
 ```
 
 - 아래 Architecture 설계도는 PPT를 사용해서 작성
@@ -492,6 +493,7 @@ graph TD
     AI->>+FastAPI: 처리 완료된 이미지 반환
     FastAPI->>+Django: 처리 완료된 이미지 반환
     Django->>User: 게시글 및 처리된 이미지 저장 완료 응답
+
 ```
 
 ## 9. 주요 기능 설명
