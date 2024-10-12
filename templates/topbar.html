@@ -1,0 +1,107 @@
+{% load static %}
+{% load custom_tags %}
+
+{% comment %}
+Topbar 네비게이션 바: 페이지 제목과 유저 정보, 검색 기능 등을 담고 있습니다.
+{% endcomment %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+
+    {% comment %}
+    페이지 제목과 설명을 표시하는 컨테이너입니다.
+    py-3는 상하단 여백을 설정하여 컨텐츠 간 간격을 조정합니다.
+    {% endcomment %}
+    <div class="container-fluid d-flex justify-content-between align-items-center py-3">
+        
+        {% comment %}
+        페이지 제목과 설명을 표시하는 부분입니다.
+        board_name이 있을 경우, 특정 게시판에 대한 제목과 설명을 표시하고,
+        없을 경우 기본 홈페이지 정보를 출력합니다.
+        {% endcomment %}
+        <div class="page-header">
+            {% if board_name %}
+                <a href="{% url_byME 'post' 'list' %}" 
+                class="h3 mb-2 text-primary font-weight-bold">
+                {% board_name_for_user %}
+                </a> 
+                <p class="mb-4 text-muted">{% board_explanation %}</p>
+            {% else %}
+                <h1 class="h3 mb-2 text-primary font-weight-bold">홈페이지</h1> 
+                <p class="mb-4 text-muted">Django Project site of 0!Code</p>
+            {% endif %}
+        </div>
+        
+    </div>
+
+    {% comment %}
+    Topbar 네비게이션 메뉴 영역
+    검색 아이콘, 메시지, 유저 정보를 포함하는 상단 네비게이션 바입니다.
+    {% endcomment %}
+    <ul class="navbar-nav ml-auto">
+
+        {% comment %}
+        검색 기능은 작은 화면에서만 활성화되며, 검색 버튼을 클릭하면 검색 창이 표시됩니다.
+        d-sm-none 클래스로 작은 화면에서만 나타납니다.
+        {% endcomment %}
+        <li class="nav-item dropdown no-arrow d-sm-none">
+            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-search fa-fw"></i>  {# 검색 아이콘 #}
+            </a>
+            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                aria-labelledby="searchDropdown">
+                <form class="form-inline mr-auto w-100 navbar-search">
+                    <div class="input-group">
+                        <input type="text" class="form-control bg-light border-0 small"
+                            placeholder="Search for..." aria-label="Search"
+                            aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button class="btn btn-primary" type="button">
+                                <i class="fas fa-search fa-sm"></i>  {# 검색 버튼 아이콘 #}
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </li>
+
+        {% comment %}
+        유저 정보를 표시하는 부분입니다.
+        사용자가 로그인한 경우 프로필 사진을 표시하고, 로그인하지 않은 경우 Guest로 표시됩니다.
+        {% endcomment %}
+        <li class="nav-item dropdown no-arrow">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                {% if user.is_authenticated %}
+                    <img class="img-profile rounded-circle" src="{% static 'img/undraw_profile.svg' %}" style="width: 60px; height: 60px;">
+                {% else %}
+                    <span class="dropdown-item">Guest</span> 
+                {% endif %}
+            </a>
+            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                aria-labelledby="userDropdown">
+                {% if user.is_authenticated %}
+                    <span class="dropdown-item">{{ user.username }}</span>
+                    <a class="dropdown-item" href="{% url 'common:logout' %}">
+                        <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> 
+                        Logout
+                    </a>
+                {% else %}
+                    <a class="dropdown-item" href="{% url 'common:login' %}">
+                        <i class="fas fa-sign-in-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                        로그인
+                    </a>
+                    <a class="dropdown-item" href="{% url 'common:signup' %}">
+                        <i class="fas fa-user-plus fa-sm fa-fw mr-2 text-gray-400"></i>
+                        회원가입
+                    </a>
+                {% endif %}
+            </div>
+        </li>
+
+    </ul>
+</nav>
+
+{% comment %}
+Topbar 끝
+상단 네비게이션 바는 끝났고, 추가 기능을 삽입할 수 있습니다.
+{% endcomment %}
