@@ -16,17 +16,12 @@ app_name = URLS['APP_NAME']  # 애플리케이션 이름
 content_type = URLS['CONTENT_TYPE']  # 컨텐츠 타입
 end_point = URLS['CRUD_AND_MORE']  # CRUD 엔드포인트 정보
 board_names = URLS['BOARD_NAME'].keys()  # 게시판 이름
-
-# 사용자에게 표시할 게시판 이름
-board_name_for_user = {
-    'similarity': '얼굴 유사도 비교',
-    'detection': '대통령을 찾아라!',
-}
+board_name_for_user = URLS['BOARD_NAME_FOR_USER']  # 사용자에게 표시할 게시판 이름
 
 # 사용자에게 표시할 게시판 이름 리스트
 board_names_for_user = [board_name_for_user[board_name] for board_name in board_names]
 
-# 게시판별 URL 리스트
+# 게시시판 리스트 URL 설정
 board_urls = [f'{app_name}:{board_name}_{content_type["post"]}_{end_point["list"]}' for board_name in board_names]
 
 
@@ -120,7 +115,7 @@ class BaseListView(ListView):
         템플릿에 추가적인 데이터를 전달합니다. 예를 들어, 페이지 번호와 검색어를 설정합니다.
     """
     paginate_by = 10  # 한 페이지에 보여줄 게시글 수
-    template_name = ''  # 사용할 템플릿 (하위 클래스에서 설정 필요)
+    template_name = NotImplemented  # 사용할 템플릿 (하위 클래스에서 설정 필요)
     search_fields = []  # 검색 필드 (하위 클래스에서 설정 필요)
 
     def get_queryset(self):
@@ -221,7 +216,8 @@ class BaseFormMixin(LoginRequiredMixin, BaseExtraContextMixin):
     model = NotImplemented  # 사용할 모델 지정 (하위 클래스에서 설정 필요)
     form_class = NotImplemented  # 사용할 폼 클래스 (하위 클래스에서 설정 필요)
     template_name = None  # 사용할 템플릿 (하위 클래스에서 설정 필요)
-
+    comment_model = NotImplemented  # 사용할 댓글 모델 (하위 클래스에서 설정 필요)
+    
     def get_context_data(self, **kwargs) -> dict:
         """
         템플릿에서 사용할 이미지 URL을 설정하는 메서드입니다.
@@ -313,7 +309,6 @@ class BaseCreateView(BaseFormMixin, CreateView):
     form_valid(form):
         폼이 유효한 경우 객체를 생성하고, 댓글인 경우 해당 댓글 위치로 리다이렉트합니다.
     """
-
     def form_valid(self, form):
         """
         폼이 유효한 경우 객체를 생성하는 메서드입니다.
@@ -339,6 +334,8 @@ class BaseCreateView(BaseFormMixin, CreateView):
             extra_tags = f'post'
         
         messages.success(self.request, '성공적으로 작성되었습니다.', extra_tags=extra_tags)
+        
+        # AI 초기 답변 생성
         
         # 리다이렉트 URL 처리
         if hasattr(obj, 'post'):

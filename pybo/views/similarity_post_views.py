@@ -1,11 +1,13 @@
 from django.contrib import messages
 
+from ..services.ai_comment_service import AICommentService
 from .base_views import BaseListView, BaseReadView, BaseCreateView, BaseUpdateView, BaseDeleteView, BaseVoteView, BaseExtraContextMixin
-from ..models import SimilarityPostModel
+from ..models import SimilarityPostModel, SimilarityCommentModel
 from ..forms import SimilarityPostForm, SimilarityCommentForm
-from .similarity_comment_views import create_initial_ai_comment
-
 from ..url_patterns import URLS
+
+import logging  # 로깅을 위한 모듈
+logger = logging.getLogger(URLS['APP_NAME'])  # 로거 생성
 
 # 기본 URL 설정
 app_name = URLS['APP_NAME']
@@ -17,8 +19,17 @@ end_point = URLS['CRUD_AND_MORE']
 read_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["read"]}'
 list_url = f'{app_name}:{board_name}_{content_type["post"]}_{end_point["list"]}'
 
-import logging  # 로깅을 위한 모듈
-logger = logging.getLogger(URLS['APP_NAME'])  # 로거 생성
+# base_views 에서 설정 못한 클래스 변수 설정
+# 댓글 모델, 댓글 폼, 게시글 모델 설정
+post_model = SimilarityPostModel
+post_form = SimilarityPostForm
+comment_model = SimilarityCommentModel
+comment_form = SimilarityCommentForm
+
+# 탬플릿 설정
+post_list_template = f'{app_name}/question_list.html'
+post_form_template = f'{app_name}/question_form.html'
+post_read_template = f'{app_name}/question_detail.html'
 
 """
 이 모듈은 BaseListView, BaseReadView, BaseCreateView, BaseUpdateView 등의 공통 뷰 클래스를 상속받아,
@@ -58,7 +69,7 @@ class SimilarityExtraContextMixin(BaseExtraContextMixin):
         """
         context = super().get_context_data(**kwargs)  # 부모 클래스의 메서드 호출
         context['board_name'] = board_name  # 게시판 이름 설정
-        context['comment_form'] = SimilarityCommentForm()  # 댓글 폼 추가
+        context['comment_form'] = comment_form()  # 댓글 폼 추가
         return context
 
 
@@ -79,8 +90,8 @@ class SimilarityPostListView(SimilarityExtraContextMixin, BaseListView):
         검색 가능한 필드를 설정합니다.
     """
 
-    model = SimilarityPostModel  # 모델 설정
-    template_name = 'pybo/question_list.html'  # 템플릿 파일 경로
+    model = post_model  # 모델 설정
+    template_name = post_list_template  # 템플릿 파일 경로
     search_fields = ['subject', 'content', 'author__username']  # 검색할 필드 설정
 
 
@@ -104,11 +115,11 @@ class SimilarityPostCreateView(SimilarityExtraContextMixin, BaseCreateView):
         사용할 템플릿 파일 경로입니다.
     """
 
-    model = SimilarityPostModel  # 모델 설정
-    form_class = SimilarityPostForm  # 사용할 폼 클래스 설정
+    model = post_model  # 모델 설정
+    form_class = post_form  # 사용할 폼 클래스 설정
     success_url = read_url  # 성공 후 리다이렉트할 URL
     failure_url = list_url  # 실패 후 리다이렉트할 URL
-    template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
+    template_name = post_form_template  # 템플릿 파일 경로
 
     def form_valid(self, form):
         """
@@ -133,8 +144,14 @@ class SimilarityPostCreateView(SimilarityExtraContextMixin, BaseCreateView):
 
         if post.image1 and post.image2:  # 이미지가 있는 경우에만 AI 처리
             try:
-                create_initial_ai_comment(post_id=post.id)
-                logger.info(f"AI 처리 완료 - 질문 ID: {post}")
+                ai_comment_service = AICommentService(post, comment_model, board_name)
+                
+                # AI 댓글 생성 후 성공 여부를 확인
+                ai_comment_service.create_comment()
+
+                # AI가 특정 인물을 찾는 작업을 추가로 실행
+                ai_comment_service.compare_similarity()
+                
             except Exception as e:
                 logger.error(f"AI 처리 실패 - 질문 ID: {post}, 에러: {str(e)}")
         else:
@@ -156,8 +173,8 @@ class SimilarityPostReadView(SimilarityExtraContextMixin, BaseReadView):
         사용할 템플릿 파일 경로입니다.
     """
 
-    model = SimilarityPostModel  # 모델 설정
-    template_name = 'pybo/question_detail.html'  # 템플릿 파일 경로
+    model = post_model  # 모델 설정
+    template_name = post_read_template  # 템플릿 파일 경로
 
 
 class SimilarityPostUpdateView(SimilarityExtraContextMixin, BaseUpdateView):
@@ -180,10 +197,10 @@ class SimilarityPostUpdateView(SimilarityExtraContextMixin, BaseUpdateView):
         사용할 템플릿 파일 경로입니다.
     """
 
-    model = SimilarityPostModel  # 모델 설정
-    form_class = SimilarityPostForm  # 폼 클래스 설정
+    model = post_model  # 모델 설정
+    form_class = post_form  # 폼 클래스 설정
     success_url = read_url  # 수정 후 리다이렉트할 URL
-    template_name = 'pybo/question_form.html'  # 템플릿 파일 경로
+    template_name = post_form_template  # 템플릿 파일 경로
 
 
 class SimilarityPostDeleteView(BaseDeleteView):
@@ -199,7 +216,7 @@ class SimilarityPostDeleteView(BaseDeleteView):
         게시글 삭제 후 리다이렉트할 URL입니다.
     """
 
-    model = SimilarityPostModel  # 모델 설정
+    model = post_model  # 모델 설정
     success_url = list_url  # 삭제 후 리다이렉트할 URL
 
 
@@ -216,5 +233,5 @@ class SimilarityPostVoteView(BaseVoteView):
         게시글 추천 후 리다이렉트할 URL입니다.
     """
 
-    model = SimilarityPostModel  # 모델 설정
+    model = post_model  # 모델 설정
     success_url = read_url  # 추천 후 리다이렉트할 URL

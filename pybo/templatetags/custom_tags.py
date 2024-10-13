@@ -1,5 +1,6 @@
 from django import template
 from django.urls import reverse
+from ..url_patterns import URLS
 
 register = template.Library()
 
@@ -43,10 +44,7 @@ def url_byME(context, content_type, end_point, post_id=None, comment_id=None):
 
 @register.simple_tag(takes_context=True)
 def board_name_for_user(context):
-    board_name_for_user = {
-        'similarity': '얼굴 유사도 비교',
-        'detection': '대통령을 찾아라!',
-    }
+    board_name_for_user = URLS['BOARD_NAME_FOR_USER']  # 사용자에게 표시할 게시판 이름
     return board_name_for_user[context.get('board_name')]
 
 @register.simple_tag(takes_context=True)
